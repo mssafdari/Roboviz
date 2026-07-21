@@ -1,0 +1,6 @@
+# view AndroidManifest.xml #generated:20
+-keep class com.roboviz.MainActivity { <init>(...); }
+
+# view res/layout/activiactivity_main.xml #generated:13
+-keep class com.roboviz.RobotVisualizationView { <init>(...); }
+

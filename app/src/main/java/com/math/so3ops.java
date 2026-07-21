@@ -1,0 +1,102 @@
+package com.math;
+
+public class so3ops
+{
+	public static so3opslog matrixExp3(so3algebra so3alg)
+    {
+        so3opslog res = new so3opslog();
+        try
+        {
+            res.log += so3alg.matrix.toString() + "\n";
+            if (so3algebra.isSkewSymmetric(so3alg.matrix) || true)
+            {
+                Vector3 omg =so3algebra.so3ToVec(so3alg);
+                double theta = omg.norm();
+
+                if (Math.abs(theta) < 1e-10)
+                {
+                    res.so3g = new so3group(Matrix.identity(3));
+                    res.log += Matrix.identity(3).toString();
+                    return res;
+                }
+
+                Vector3 unitOmg = omg.normalize();
+                so3algebra omega =so3algebra.vecToSo3(unitOmg);
+
+                Matrix identity = Matrix.identity(3);
+                Matrix term1 = Matrix.scalarMulti(Math.sin(theta), omega.matrix);
+                Matrix term2 = Matrix.scalarMulti(1.0 - Math.cos(theta), omega.matrix.multiply(omega.matrix));
+                res.so3g = new so3group(identity.add(term1).add(term2));
+                res.log+= "theta="+ theta+"\n";
+                res.log+= "omega-hat="+omega.matrix.toString()+"\n";
+                res.log += "I=" + identity.toString() + "\n";
+                res.log += "sin(theta)[omega]=" + term1.toString() + "\n";
+                res.log += "1-cos(theta)[omega]^2=" + term2.toString() + "\n";
+                res.log += "result="+identity.add(term1).add(term2)+"\n";
+                return res;
+            }
+        }
+        catch (Exception e)
+        {
+            return res;
+        }
+
+		throw new IllegalArgumentException("Input is not a valid skew symmetric matrix.");
+	}
+	public static so3opslog matrixLog3(so3group R)
+    {
+        so3opslog res = new so3opslog();
+        try
+        {
+            so3algebra so3alg = new so3algebra(Matrix.identity(3));
+            axis3theta at = new axis3theta();
+            Matrix temp = Matrix.zeros(3,3);
+            Vector3 Vec= new Vector3();
+            
+            if (so3group. isRotation(R.matrix))
+            {
+                if (R.matrix.isEqual(Matrix.identity(3)))
+                {
+                    res.so3alg = so3alg;
+                    return res;
+                }
+                else if (R.matrix.trace() == -1)
+                {
+                    at.theta = Math.PI;
+                    if (R.matrix.data[2][2] != -1)
+                    {
+                        temp = Matrix.scalarMulti(1 / Math.sqrt(2 * (1 + R.matrix.data[2][2])), new Vector3(R.matrix.data[0][2], R.matrix.data[1][2], 1 + R.matrix.data[2][2]));
+                    }
+                    else if (R.matrix.data[1][1] != -1)
+                    {
+                        temp = Matrix.scalarMulti(1 / Math.sqrt(2 * (1 + R.matrix.data[1][1])), new Vector3(R.matrix.data[0][1], 1 + R.matrix.data[1][1], R.matrix.data[2][1]));
+                    }
+                    else
+                    {
+                        temp = Matrix.scalarMulti(1 / Math.sqrt(2 * (1 + R.matrix.data[0][0])), new Vector3(1 + R.matrix.data[0][0], R.matrix.data[1][0], R.matrix.data[2][0]));
+                    }
+                    Vec = new Vector3(temp.data[0][0], temp.data[1][0], temp.data[2][0]);
+                    res.so3alg = so3algebra.vecToSo3(Vec);
+                    res.log += "vec=" + Vec.toString()+"\n";;
+                    res.log += "so3alg=" + so3alg.matrix.toString() + "\n";
+                    return res;
+                }
+                else
+                {
+                    at.theta = Math.acos(.5 * (R.matrix.trace() - 1));
+                    Matrix omega = Matrix.scalarMulti(.5 * at.theta / Math.sin(at.theta), R.matrix.subtract(R.matrix.transpose()));
+                    Vec = so3algebra.so3ToVec(new so3algebra(omega));
+                    res.so3alg = so3algebra.vecToSo3(Vec);  
+                    res.log += "vec=" + Vec.toString()+"\n";
+                    res.log += "so3alg=" + so3alg.matrix.toString() + "\n";
+                    return res;
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            return res;
+        }
+		throw new IllegalArgumentException("oops.");
+	}
+}

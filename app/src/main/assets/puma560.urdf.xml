@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+<robot name="puma_560">
+    <material name="white"><color rgba="1 1 1 1"/></material>
+    <material name="red"><color rgba="1 0 0 1"/></material>
+    <material name="blue"><color rgba="0 0 1 1"/></material>
+    <material name="green"><color rgba="0 1 0 1"/></material>
+    <material name="yellow"><color rgba="1 1 0 1"/></material>
+    <material name="orange"><color rgba="1 0.5 0 1"/></material>
+
+    <!-- Base -->
+    <link name="base_link">
+        <visual>
+            <geometry><cylinder radius="0.15" length="0.1"/></geometry>
+            <material name="white"/>
+        </visual>
+    </link>
+
+    <!-- Joint 1: Base to Link1 (rotation about Z) -->
+    <joint name="joint1" type="revolute">
+        <parent link="base_link"/>
+        <child link="link1"/>
+        <origin xyz="0 0 0.1" rpy="0 0 0"/>
+        <axis xyz="0 0 1"/>
+        <limit lower="-3.14" upper="3.14" effort="100" velocity="1.0"/>
+    </joint>
+    <link name="link1">
+        <visual>
+            <geometry><cylinder radius="0.1" length="0.2"/></geometry>
+            <origin xyz="0 0 0.1" rpy="0 0 0"/>
+            <material name="red"/>
+        </visual>
+    </link>
+
+    <!-- Joint 2: Link1 to Link2 (rotation about Y) -->
+    <joint name="joint2" type="revolute">
+        <parent link="link1"/>
+        <child link="link2"/>
+        <origin xyz="0 0 0.2" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+        <limit lower="-2.0" upper="2.0" effort="100" velocity="1.0"/>
+    </joint>
+    <link name="link2">
+        <visual>
+            <geometry><cylinder radius="0.08" length="0.4"/></geometry>
+            <origin xyz="0 0 0.2" rpy="0 0 0"/>
+            <material name="blue"/>
+        </visual>
+    </link>
+
+    <!-- Joint 3: Link2 to Link3 (rotation about Y) -->
+    <joint name="joint3" type="revolute">
+        <parent link="link2"/>
+        <child link="link3"/>
+        <origin xyz="0 0 0.4" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+        <limit lower="-2.0" upper="2.0" effort="100" velocity="1.0"/>
+    </joint>
+    <link name="link3">
+        <visual>
+            <geometry><cylinder radius="0.06" length="0.3"/></geometry>
+            <origin xyz="0 0 0.15" rpy="0 0 0"/>
+            <material name="green"/>
+        </visual>
+    </link>
+
+    <!-- Joint 4: Link3 to Link4 (rotation about X) -->
+    <joint name="joint4" type="revolute">
+        <parent link="link3"/>
+        <child link="link4"/>
+        <origin xyz="0 0 0.3" rpy="0 0 0"/>
+        <axis xyz="1 0 0"/>
+        <limit lower="-3.14" upper="3.14" effort="50" velocity="1.5"/>
+    </joint>
+    <link name="link4">
+        <visual>
+            <geometry><sphere radius="0.05"/></geometry>
+            <material name="yellow"/>
+        </visual>
+    </link>
+
+    <!-- Joint 5: Link4 to Link5 (rotation about Y) -->
+    <joint name="joint5" type="revolute">
+        <parent link="link4"/>
+        <child link="link5"/>
+        <origin xyz="0 0 0.05" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+        <limit lower="-3.14" upper="3.14" effort="50" velocity="1.5"/>
+    </joint>
+    <link name="link5">
+        <visual>
+            <geometry><sphere radius="0.04"/></geometry>
+            <material name="orange"/>
+        </visual>
+    </link>
+
+    <!-- Joint 6: Link5 to End Effector (rotation about X) -->
+    <joint name="joint6" type="revolute">
+        <parent link="link5"/>
+        <child link="end_effector"/>
+        <origin xyz="0 0 0.04" rpy="0 0 0"/>
+        <axis xyz="1 0 0"/>
+        <limit lower="-3.14" upper="3.14" effort="30" velocity="2.0"/>
+    </joint>
+    <link name="end_effector">
+        <visual>
+            <geometry><sphere radius="0.03"/></geometry>
+            <material name="red"/>
+        </visual>
+    </link>
+</robot>

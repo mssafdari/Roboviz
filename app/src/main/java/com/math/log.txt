@@ -1,0 +1,97 @@
+private boolean testMatrixExp6()
+    {
+        try
+        {
+            double pi = Math.PI;
+            double[][] Tsb = new double[][]
+            {{Math.cos(pi/6),-1.0*Math.sin(pi/6),0,1},{
+              Math.sin(pi/6),Math.cos(pi/6),0,2},{
+              0,0,1,0},
+                {0,0,0,1}};
+            double[][] Tsc = new double[][]
+            {{Math.cos(pi/3),-1.0*Math.sin(pi/3),0,2},{
+                    Math.sin(pi/3),Math.cos(pi/3),0,1},{
+                    0,0,1,0},
+                {0,0,0,1}};
+            double[][] matrixExp = new double[][]
+            {{0,-1.0,0,3.37},{
+              1,0,0,-3.37},{
+                    0,0,0,0},
+                {0,0,0,0}};
+                Matrix msb=new Matrix(Tsb);
+                Matrix msc=new Matrix(Tsc);
+                Matrix me = new Matrix(matrixExp);
+                Matrix res = msc.multiply(msb.inverse());
+                errorReport+="mInv="+res.toString()+"\n";
+            se3opslog se3g= se3ops.matrixExp6(new se3algebra(me));
+            errorReport +=se3g.log+"\n";
+            errorReport +="me6res="+se3g.se3g.matrix.toString()+"\n";
+                return se3g.se3g.matrix.isEqual(res);
+            
+        }
+        catch (Exception e)
+        {
+            errorReport += "\n" + e.getMessage() + " from matrixexp3\n";
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    public static se3opslog matrixExp6(se3algebra se3alg)
+    {
+        se3opslog se3o= new se3opslog();
+        try{
+        if (se3alg.matrix.getSubMatrix(0, 0, 3, 3).isSkewSymmetric())
+        {
+            if (se3alg.matrix.getSubMatrix(3, 0, 1, 4).isEqual(Matrix.zeros(4, 4).getSubMatrix(3, 0, 1, 4)))
+            {
+                se3o.log+="input matrix="+se3alg.matrix.toString()+"\n";
+                Vector6 V = se3algebra.se3ToVec(se3alg);
+                axis6theta at =Vector6.axisAng6(V);
+                Vector3 omg = at.axis.omega;
+                Vector3 vel = at.axis.velocity;
+                so3algebra omeg = so3algebra.vecToSo3(omg);
+                se3o.log+="omeg size="+at.axis.velocity.rows+"x"+at.axis.velocity.cols+"\n";
+                se3o.log+="omg.norm="+omg.norm()+"--- vel.norm="+vel.norm()+"\n";
+                if (omg.norm() == 1)
+                {
+                    so3opslog o = so3ops.matrixExp3(new so3algebra(Matrix.scalarMulti(at.theta, omeg.matrix)));
+                    Matrix part1 = Matrix.scalarMulti(at.theta, Matrix.identity(3));
+                    Matrix part2 = Matrix.scalarMulti(1 - Math.cos(at.theta), omeg.matrix);
+                    Matrix part3 = Matrix.scalarMulti(at.theta - Math.sin(at.theta), omeg.matrix.multiply(omeg.matrix));
+                    Matrix result = part1.add(part2).add(part3).multiply(at.axis.velocity);
+                    se3o.log+="result1st="+result.rows+"x"+result.cols+"\n";
+                    Matrix se3gmat = Matrix.blockToMatrix(new Matrix[][]{{o.so3g.matrix,result},{Matrix.zeros(1, 3),Matrix.identity(1)}});
+                    //se3group se3g = new se3group(Matrix.blockMatrix(T));
+                    se3group se3g= new se3group(se3gmat);
+                    se3o.se3g=se3g;
+                    se3o.log+="se3g1="+se3g.matrix.toString();
+                    
+                }
+                else if (vel.norm() == 1 && omg.norm() == 0)
+                {
+                    double[][] result = Matrix.identity(4).data;
+                    Matrix.setSubMatrix(result, 0, 3, (Matrix.scalarMulti(at.theta, at.axis.velocity)).data);
+                    se3group se3g = new se3group(new Matrix(result));
+                    se3o.se3g=se3g;
+                    se3o.log+="se3g2="+se3g.matrix.toString();
+                }
+                else
+                {
+                    se3group se3g = new se3group(Matrix.identity(4));
+                    se3o.se3g=se3g;
+                    se3o.log+="se3g3="+se3g.matrix.toString();
+                }
+                return se3o;
+            }
+        }
+        }catch (Exception e)
+        {
+            se3o.log += e.getMessage() + "from rotInv\n";
+            return se3o;
+        }
+        throw new IllegalArgumentException("Input is not a valid se3algebra matrix.");
+	}
+	​00.5−0.30​−0.500.20​0.3−0.200​0.10.20.30​​
+
+	

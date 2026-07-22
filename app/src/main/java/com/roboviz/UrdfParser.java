@@ -100,29 +100,51 @@ public class UrdfParser
 		return joint;
 	}
 	private Origin parseOrigin(XmlPullParser parser) {
-
 		String xyz = parser.getAttributeValue(null, "xyz");
 		String rpy = parser.getAttributeValue(null, "rpy");
 
-		String[] parts = (xyz + " " + rpy).split(" ");
+		// Default values if missing
+		float x = 0, y = 0, z = 0;
+		float roll = 0, pitch = 0, yaw = 0;
 
-		return new Origin(
-            Float.parseFloat(parts[0]),
-            Float.parseFloat(parts[1]),
-            Float.parseFloat(parts[2]),
-            Float.parseFloat(parts[3]),
-            Float.parseFloat(parts[4]),
-            Float.parseFloat(parts[5]));
+		// Parse xyz
+		if (xyz != null && !xyz.isEmpty()) {
+			String[] xyzParts = xyz.trim().split("\\s+");
+			if (xyzParts.length >= 3) {
+				x = Float.parseFloat(xyzParts[0]);
+				y = Float.parseFloat(xyzParts[1]);
+				z = Float.parseFloat(xyzParts[2]);
+			}
+		}
+
+		// Parse rpy
+		if (rpy != null && !rpy.isEmpty()) {
+			String[] rpyParts = rpy.trim().split("\\s+");
+			if (rpyParts.length >= 3) {
+				roll = Float.parseFloat(rpyParts[0]);
+				pitch = Float.parseFloat(rpyParts[1]);
+				yaw = Float.parseFloat(rpyParts[2]);
+			}
+		}
+
+		return new Origin(x, y, z, roll, pitch, yaw);
 	}
+
 	private Axis parseAxis(XmlPullParser parser) {
+		String xyz = parser.getAttributeValue(null, "xyz");
 
-		String[] parts =
-            parser.getAttributeValue(null, "xyz").split(" ");
+		float x = 0, y = 0, z = 0;
 
-		return new Axis(
-            Float.parseFloat(parts[0]),
-            Float.parseFloat(parts[1]),
-            Float.parseFloat(parts[2]));
+		if (xyz != null && !xyz.isEmpty()) {
+			String[] parts = xyz.trim().split("\\s+");
+			if (parts.length >= 3) {
+				x = Float.parseFloat(parts[0]);
+				y = Float.parseFloat(parts[1]);
+				z = Float.parseFloat(parts[2]);
+			}
+		}
+
+		return new Axis(x, y, z);
 	}
 	private void buildTree(Robot robot) {
 

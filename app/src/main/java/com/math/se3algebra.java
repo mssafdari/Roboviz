@@ -25,4 +25,12 @@ public class se3algebra
 		Matrix.setSubMatrix(vecTo.matrix.data,3,0,Matrix.zeros(1,4).data);
 		return vecTo;
 	}
+	public Vector3 getVelocity(){
+        return new Vector3(matrix.data[0][3],matrix.data[1][3],matrix.data[2][3]);
+    }
+    public Vector3 getOmega(){
+        Matrix rot=matrix.getSubMatrix(0,0,3,3);
+		so3algebra omg= new so3algebra(rot);
+        return so3algebra.so3ToVec(omg);
+    }
 }

@@ -6,6 +6,7 @@ class axis6theta{
 }
 
 public class Vector6 extends Matrix {
+	
     public Vector3 omega;
 	public Vector3 velocity;
     

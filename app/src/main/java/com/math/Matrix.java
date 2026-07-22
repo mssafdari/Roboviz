@@ -252,6 +252,9 @@ public class Matrix
 		}
 		return minor;
 	}
+	public Matrix pseudoInverse(){
+		return Matrix.identity(4);//to do change
+	}
     public Matrix inverse()
 	{
 		if (!isSquare())

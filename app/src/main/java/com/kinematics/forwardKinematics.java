@@ -1,0 +1,30 @@
+package com.kinematics;
+import com.math.se3group;
+import com.math.se3algebra;
+import com.math.Matrix;
+import com.math.se3ops;
+
+public class forwardKinematics
+{
+	public static se3group FKinBody(se3group M, se3algebra[] Blist, Matrix thetaList)
+	{
+        se3group endEffectorT=M;
+        for (int i=0;i < thetaList.getRows();i++)
+		{
+            se3algebra se3alg = new se3algebra(Matrix.scalarMulti(thetaList.get(i, 0), Blist[i].matrix));
+            endEffectorT.matrix = endEffectorT.matrix.multiply(se3ops.matrixExp6(se3alg).se3alg.matrix);
+		}
+        return endEffectorT;
+    }
+    public static se3group FKinSpace(se3group M, se3algebra[] Slist, Matrix thetaList)
+	{
+        se3group endEffectorT=new se3group(Matrix.identity(4));
+        for (int i=0;i < thetaList.getRows();i++)
+		{
+            se3algebra se3alg = new se3algebra(Matrix.scalarMulti(thetaList.get(i, 0), Slist[i].matrix));
+            endEffectorT.matrix = endEffectorT.matrix.multiply((se3ops.matrixExp6(se3alg).se3alg.matrix));
+        }
+        endEffectorT.matrix = endEffectorT.matrix.multiply(M.matrix);
+        return endEffectorT;
+    }
+}

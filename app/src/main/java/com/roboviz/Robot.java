@@ -18,6 +18,8 @@ public class Robot
         PRISMATIC
     }
     public String name;
+	public String log="";
+	private String nl="\n";
 
     public ArrayList<Link> links = new ArrayList<>();
 
@@ -60,11 +62,12 @@ public class Robot
 		}
 
 		sb.append("\nTree\n");
-
+        
 		appendTree(root, sb, "");
         int depth=0;
         buildMiminusonei(root,depth);
         buildM0iArray();
+		sb.append(log);
 		return sb.toString();
 	}
 	private void appendTree(LinkNode node,
@@ -86,7 +89,6 @@ public class Robot
 
             String type=link.children.get(0).parentJoint.type;
             se3group Mim1i=originTotransform(origin);
-            
             Miminusonei.add(Mim1i);
             jointTypes.add(type);
             jointAxisses.add(axisToVector3(axis));
@@ -100,12 +102,12 @@ public class Robot
         se3algebra S = new se3algebra(Matrix.zeros(4,4));
         Vector6 Svec = new Vector6();
         Vector6 Bvec = new Vector6();
-        String log="";
-		String nl="\n";
+        
+		
         M0i.add(M);  // T0,0
        
         for (int i = 0; i < Miminusonei.size(); i++) {
-			log+="Mim1i("+i+") ="+Miminusonei.get(i).matrix+nl;
+			log+="Mim1i("+i+","+(i+1)+") ="+Miminusonei.get(i).matrix+nl;
             M.matrix = M.matrix.multiply(Miminusonei.get(i).matrix);
             so3group R0i=M.getRotation();
             Vector3 P0i=M.getPosition();
@@ -114,23 +116,27 @@ public class Robot
             String jointT= jointTypes.get(i);
             jointType jt=getJointType(jointT);
             S=computeScrewInBase(A0i,P0i,jt);
+			log+="M0,"+i+") ="+M.matrix+nl;
+ 
             M0i.add(M);
             Slist.add(S);
         }
 		//R = Rx(π/2) * Ry(0) * Rz(0) = Rx(π/2)
-		se3group oo=originTotransform( new Origin(1,2,3,(float)(Math.PI/2),0,0));
-		log+="xvxvx"+oo.matrix.toString()+nl;
+		/*se3group oo=originTotransform( new Origin(1,2,3,(float)(Math.PI/2),0,0));
+		log+="xvxvx"+oo.matrix.toString()+nl;*/
 		try{
 		
         M = M0i.get(M0i.size()-1);
 		log+="M="+M.matrix.toString()+nl;
         for (int i = 0; i < Miminusonei.size(); i++) {
-			log+="slist(i)="+Slist.get(i).matrix.toString()+nl;
+			log+="slist("+i+")="+Slist.get(i).matrix.toString()+nl;
             Svec = se3algebra.se3ToVec(Slist.get(i));
+			log+="Slist("+i+")="+Svec.toString()+nl;
             Bvec=new Vector6( se3group.adjoint(se3group.transInverse(M)).adj.multiply(Svec));
             Blist.add(se3algebra.vecToSe3(Bvec));
+			log+="Blist("+i+")="+Blist.get(i)+nl;
         }
-			int j=4/0;
+			//int j=4/0;
 		}catch(Exception e){
 			throw new RuntimeException("xxx"+log, e);
 		}
@@ -138,7 +144,7 @@ public class Robot
     // utilities
     private se3algebra computeScrewInBase(Vector3 omega_0, Vector3 p_0,Enum jType) {
         if(jType==jointType.REVOLUTE){
-            Vector3 v = p_0.cross(omega_0).negate();
+            Vector3 v = p_0.cross(omega_0);
             return new se3algebra(omega_0, v);
         }
         else if(jType==jointType.PRISMATIC){

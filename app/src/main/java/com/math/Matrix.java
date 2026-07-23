@@ -1,5 +1,6 @@
 package com.math;
 import java.util.Locale;
+import android.net.wifi.aware.PublishConfig;
 
 public class Matrix
 {
@@ -20,6 +21,12 @@ public class Matrix
 	}
     public Matrix(int numRows,int numCols){
 		this(Matrix.zeros(numRows,numCols).data);
+	}
+	public Matrix(int size){
+		this(Matrix.zeros(size,size).data);
+	}
+	public double[][] getData(){
+		return data;
 	}
     // Core methods every matrix should have
     public  Matrix add(Matrix other)

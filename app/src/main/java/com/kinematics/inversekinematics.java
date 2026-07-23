@@ -16,7 +16,7 @@ public class inversekinematics
 	public static double ev=0.000001;
 	public static int maxIterations=100;
 
-	public static IKresult IKinBody(se3algebra[] Blist, se3group M, se3algebra T, Matrix thetaList0)
+	public static IKresult IKinBody(ArrayList<se3algebra> Blist, se3group M, se3algebra T, Matrix thetaList0)
 	{
 		int iteration=0;
 		ArrayList<Vector6> jb=jacobianBuilder.JacobianBody(Blist, thetaList0);
@@ -46,7 +46,7 @@ public class inversekinematics
 	//Vb=MatrixLog6(x);
 	//Vs=VecTose3(Adjoint(Tsb)*se3ToVec(Vb));
 
-	public static IKresult IKinSpace(se3algebra[] Slist, se3group M, se3algebra T, Matrix thetaList0)
+	public static IKresult IKinSpace(ArrayList<se3algebra> Slist, se3group M, se3algebra T, Matrix thetaList0)
 	{
 		int iteration =0;
 		ArrayList<Vector6> js=jacobianBuilder.JacobianSpace(Slist, thetaList0);

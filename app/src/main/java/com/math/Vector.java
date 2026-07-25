@@ -39,19 +39,52 @@ public class Vector extends Matrix {
     }
 
     // Override operations to return Vector when possible
-    @Override
-    public Vector add(Matrix other) {
-        return new Vector(super.add(other).getData());
-    }
+    public  Vector add(Vector other)
+	{
+		Vector added= new Vector(this.getRows());
+		if (this.hasSameDimensions(other))
+		{
+			for (int i=0;i < this.rows;i++)
+			{
+					added.data[i][0] += other.data[i][0];
+			}
+			return added;
+		}
+		else
+		{
+			throw new IllegalArgumentException(
+				"Matrices must have the same dimensions."
+			);
+		}
+	}
 
-    @Override
-    public Vector subtract(Matrix other) {
-        return new Vector(super.subtract(other).getData());
-    }
+    public  Vector subtract(Vector other)
+	{
+		Vector added= new Vector(this.getRows());
+		if (this.hasSameDimensions(other))
+		{
+			for (int i=0;i < this.rows;i++)
+			{
+				added.data[i][0] -= other.data[i][0];
+			}
+			return added;
+		}
+		else
+		{
+			throw new IllegalArgumentException(
+				"Matrices must have the same dimensions."
+			);
+		}
+	}
 
-    public static Vector scalarMulti(double scale,Vector org) {
-        return new Vector(Matrix.scalarMulti(scale,org).getData());
-    }
+    public static Vector scalarMulti(double scale,Vector org){
+		Vector vec = new Vector(org.getRows());
+		for (int j=0;j < org.rows;j++)
+		{
+				vec.data[j][0] *= scale;
+		}
+		return vec;
+	}
 
     // Static factory methods
     public static Vector zeros(int size) {

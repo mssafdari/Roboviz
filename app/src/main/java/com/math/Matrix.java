@@ -84,30 +84,6 @@ public class Matrix
 		return mat;
 	}
 	
-   /* public  Matrix multiply(Matrix other)
-	{
-		if (this.cols == other.rows)
-		{
-			Matrix result = new Matrix(Matrix.zeros(this.rows, other.cols).data);
-			for (int i=0;i < other.cols;i++)
-			{
-				for (int j=0;j < this.rows;j++)
-				{
-					for (int k=0;k < this.cols;k++)
-					{
-						result.data[j][i] += this.data[j][k] * other.data[k][i];
-					}
-				}
-			}
-			return result;
-		}
-		else
-		{
-			throw new IllegalArgumentException(
-				"Matrix dimensions don't match for multiplication."
-			);
-		}
-	}*/
     public Matrix multiply(Matrix other) {
         if (this.cols != other.rows) {
             throw new IllegalArgumentException(

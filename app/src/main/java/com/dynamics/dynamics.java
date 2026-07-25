@@ -35,14 +35,15 @@ public class dynamics
 	}
 
 	//taulist = InverseDynamics(thetalist,dthetalist,ddthetalist,g,Ftip, Mlist,Glist,Slist)
-	public static Matrix inverseDynamics(velPos thetaDTheta, Vector ddthetaList, Vector6 Ftip,
+	public static Vector inverseDynamics(velPos thetaDTheta, Vector ddthetaList, Vector6 Ftip,
 										 robotModel model)
 	{
 		Matrix massM=massMatrix(thetaDTheta.getThetaList(), model);
-		Matrix VelQuadForces=velQuadraticForces(thetaDTheta.getThetaList(), thetaDTheta.getDThetaList(), model);
-		Matrix gforces=gravityForces(thetaDTheta.getThetaList(), model);
-		Matrix eeForces=endEffectorForces(thetaDTheta.getThetaList(), Ftip, model);
-		return massM.multiply(thetaDTheta.getDThetaList()).add(VelQuadForces).add(gforces).add(eeForces);
+		Vector VelQuadForces=velQuadraticForces(thetaDTheta.getThetaList(), thetaDTheta.getDThetaList(), model);
+		Vector gforces=gravityForces(thetaDTheta.getThetaList(), model);
+		Vector eeForces=endEffectorForces(thetaDTheta.getThetaList(), Ftip, model);
+		Vector massThetadd=massM.multiply(thetaDTheta.getDThetaList());
+		return  massThetadd.add(VelQuadForces).add(gforces).add(eeForces);
 	}
 
 	//M = MassMatrix(thetalist,Mlist,Glist,Slist)
@@ -55,7 +56,7 @@ public class dynamics
 	}
 
 	//c = VelQuadraticForces(thetalist,dthetalist,Mlist,Glist,Slist)
-	public static Matrix velQuadraticForces(Vector thetaList, Vector dthetalist, robotModel model)
+	public static Vector velQuadraticForces(Vector thetaList, Vector dthetalist, robotModel model)
 	{
 		dynConfig res=initializeMatrices(thetaList, model);
 		Matrix adAthetadot=buildLieBraAthetadot(res.Alist, dthetalist);
@@ -66,17 +67,17 @@ public class dynamics
 		Matrix part2= res.G6nx6n.multiply(res.Ltheta6nx6n).multiply(adAthetadot).multiply(Wtheta);
 		Matrix part3=adV.transpose().multiply(res.G6nx6n);
 		Matrix part4=res.Ltheta6nx6n.multiply(res.A6nx6n).multiply(dthetalist);
-		return part1.multiply(part2.add(part3)).multiply(part4);
+		return new Vector( part1.multiply(part2.add(part3)).multiply(part4).getData());
 	}
 
 	//grav = GravityForces(thetalist,g,Mlist,Glist,Slist)
-	public static Matrix gravityForces(Vector thetaList, robotModel model)
+	public static Vector gravityForces(Vector thetaList, robotModel model)
 	{
 	    dynConfig res=initializeMatrices(thetaList, model);
 		Matrix part1= res.A6nx6n.transpose().multiply(res.Ltheta6nx6n.transpose());
 		Matrix Vdot_base=buildVdotBase(thetaList.getRows());
 		Matrix part2= res.G6nx6n.multiply(res.Ltheta6nx6n).multiply(Vdot_base);
-		return part1.multiply(part2);
+		return new Vector(part1.multiply(part2).getData());
 	}
 
 	public static dynConfig initializeMatrices(Vector thetaList, robotModel model)
@@ -110,7 +111,7 @@ public class dynamics
 		for(int i=0;i<thetaDTheta.getThetaList().getRows();i++){
 			massM.add(Jbi.get(i).transpose().multiply(model.Glist.get(i).matrix).multiply(Jbi.get(i)));
 		}
-		Matrix hthetathetadot=inverseDynamics(thetaDTheta,Vector.zeros(tauList.getRows()),new Vector6(),model);
+		Vector hthetathetadot=inverseDynamics(thetaDTheta,Vector.zeros(tauList.getRows()),new Vector6(),model);
 		Vector eeForces=endEffectorForces(thetaDTheta.getThetaList(),Ftip,model);
 		Vector rhs=tauList.subtract(hthetathetadot).subtract(eeForces);
 		return massM.inverse().multiply(rhs);
@@ -123,7 +124,7 @@ public class dynamics
 		Vector dThetaList=thetaDTheta.getDThetaList();
 		Vector thetaPlus1,dthetaPlus1;
 		thetaPlus1 = thetaList.add(Vector.scalarMulti(dt, dThetaList));
-		dthetaPlus1 = dThetaList.add(Matrix.scalarMulti(dt, ddThetaList));
+		dthetaPlus1 = dThetaList.add(Vector.scalarMulti(dt, ddThetaList));
 		return new velPos(thetaPlus1, dthetaPlus1);
 	}
 

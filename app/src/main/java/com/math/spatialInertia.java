@@ -2,7 +2,7 @@ package com.math;
 
 public class spatialInertia
 {
-	Matrix matrix=new Matrix(6,6);
+	public Matrix matrix=new Matrix(6,6);
 	double mass;
 	Matrix momInertia;
 	public spatialInertia(Matrix mIne,double m){

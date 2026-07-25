@@ -1,282 +1,527 @@
+// Vector.java - Base vector class
+public class Vector extends Matrix {
+    // Constructor
+    public Vector(int size) {
+        super(size, 1);
+    }
+    
+    public Vector(double[][] data) {
+        super(data);
+        if (getCols() != 1) {
+            throw new IllegalArgumentException("Vector must have exactly 1 column");
+        }
+    }
+    
+    public Vector(double[] data) {
+        super(data.length, 1);
+        for (int i = 0; i < data.length; i++) {
+            set(i, 0, data[i]);
+        }
+    }
+    
+    // Copy constructor
+    public Vector(Vector other) {
+        super(other.getData());
+    }
+    
+    // Convenience methods
+    public double get(int i) {
+        return getData()[i][0];
+    }
+    
+    public void set(int i, double value) {
+        set(i, 0, value);
+    }
+    
+    public int size() {
+        return getRows();
+    }
+    
+    // Override operations to return Vector when possible
+    @Override
+    public Vector add(Matrix other) {
+        return new Vector(super.add(other).getData());
+    }
+    
+    @Override
+    public Vector subtract(Matrix other) {
+        return new Vector(super.subtract(other).getData());
+    }
+    
+    @Override
+    public Vector scalarMulti(double scalar) {
+        return new Vector(super.scalarMulti(scalar).getData());
+    }
+    
+    // Static factory methods
+    public static Vector zeros(int size) {
+        return new Vector(Matrix.zeros(size, 1).getData());
+    }
+    
+    public static Vector ones(int size) {
+        return new Vector(Matrix.ones(size, 1).getData());
+    }
+}
 
+// Vector6.java - Specialized 6D vector for robotics
+public class Vector6 extends Vector {
+    public Vector6() {
+        super(6);
+    }
+    
+    public Vector6(double[] data) {
+        super(data);
+        if (data.length != 6) {
+            throw new IllegalArgumentException("Vector6 must have exactly 6 elements");
+        }
+    }
+    
+    public Vector6(Matrix matrix) {
+        super(matrix.getData());
+        if (matrix.getRows() != 6 || matrix.getCols() != 1) {
+            throw new IllegalArgumentException("Matrix must be 6x1");
+        }
+    }
+    
+    public Vector6(double v1, double v2, double v3, double v4, double v5, double v6) {
+        super(new double[]{v1, v2, v3, v4, v5, v6});
+    }
+    
+    // Getters for specific components
+    public double getOmegaX() { return get(0); }
+    public double getOmegaY() { return get(1); }
+    public double getOmegaZ() { return get(2); }
+    public double getVelX() { return get(3); }
+    public double getVelY() { return get(4); }
+    public double getVelZ() { return get(5); }
+    
+    // Setters for specific components
+    public void setOmegaX(double val) { set(0, val); }
+    public void setOmegaY(double val) { set(1, val); }
+    public void setOmegaZ(double val) { set(2, val); }
+    public void setVelX(double val) { set(3, val); }
+    public void setVelY(double val) { set(4, val); }
+    public void setVelZ(double val) { set(5, val); }
+    
+    // Override operations to return Vector6
+    @Override
+    public Vector6 add(Matrix other) {
+        return new Vector6(super.add(other).getData());
+    }
+    
+    @Override
+    public Vector6 subtract(Matrix other) {
+        return new Vector6(super.subtract(other).getData());
+    }
+    
+    @Override
+    public Vector6 scalarMulti(double scalar) {
+        return new Vector6(super.scalarMulti(scalar).getData());
+    }
+}
 
-	Robot: ur5
+// Refactored Dynamics.java using Vector classes
+public class Dynamics {
+    // Constants
+    private static final double GRAVITY = -9.81;
+    private static final double DT = 0.05;
+    private static final double RES = 0.05;
+    private static final int VECTOR_SIZE = 6;
+    private static final Vector6 V_DOT_BASE = createVdotBase();
+    
+    // Configuration class
+    public static class DynamicsConfig {
+        private final List<Se3Algebra> alist;
+        private final Matrix a6nx6n;
+        private final Matrix lTheta6nx6n;
+        private final Matrix g6nx6n;
+        
+        public DynamicsConfig(List<Se3Algebra> alist, Matrix a6nx6n, 
+                            Matrix lTheta6nx6n, Matrix g6nx6n) {
+            this.alist = alist;
+            this.a6nx6n = a6nx6n;
+            this.lTheta6nx6n = lTheta6nx6n;
+            this.g6nx6n = g6nx6n;
+        }
+        
+        public List<Se3Algebra> getAlist() { return alist; }
+        public Matrix getA6nx6n() { return a6nx6n; }
+        public Matrix getLTheta6nx6n() { return lTheta6nx6n; }
+        public Matrix getG6nx6n() { return g6nx6n; }
+    }
+    
+    // State class using Vector for joint positions and velocities
+    public static class RobotState {
+        private final Vector thetaList;
+        private final Vector dThetaList;
+        
+        public RobotState(Vector thetaList, Vector dThetaList) {
+            if (thetaList.size() != dThetaList.size()) {
+                throw new IllegalArgumentException("Theta and dTheta must have same size");
+            }
+            this.thetaList = thetaList;
+            this.dThetaList = dThetaList;
+        }
+        
+        public Vector getThetaList() { return thetaList; }
+        public Vector getDThetaList() { return dThetaList; }
+        public int getJointCount() { return thetaList.size(); }
+    }
+    
+    // Public API methods
+    public static Vector inverseDynamics(RobotState state, Vector ddThetaList, 
+                                        Vector6 ftip, RobotModel model) {
+        Matrix massMatrix = calculateMassMatrix(state.getThetaList(), model);
+        Vector velocityForces = calculateVelocityForces(state.getThetaList(), 
+                                                       state.getDThetaList(), model);
+        Vector gravityForces = calculateGravityForces(state.getThetaList(), model);
+        Vector endEffectorForces = calculateEndEffectorForces(state.getThetaList(), 
+                                                             ftip, model);
+        
+        Matrix result = massMatrix.multiply(ddThetaList)
+                                  .add(velocityForces)
+                                  .add(gravityForces)
+                                  .add(endEffectorForces);
+        return new Vector(result.getData());
+    }
+    
+    public static Vector forwardDynamics(RobotState state, Vector tauList, 
+                                        Vector6 ftip, RobotModel model) {
+        // Calculate mass matrix using Jacobians
+        List<Matrix> jacobianBi = buildJacobianBi(state.getThetaList(), model);
+        Matrix massMatrix = buildMassMatrixFromJacobians(jacobianBi, model);
+        
+        // Calculate other forces
+        RobotState zeroState = new RobotState(
+            state.getThetaList(),
+            Vector.zeros(state.getJointCount())
+        );
+        Vector velocityForces = inverseDynamics(
+            zeroState,
+            Vector.zeros(state.getJointCount()),
+            new Vector6(),
+            model
+        );
+        Vector endEffectorForces = calculateEndEffectorForces(state.getThetaList(), ftip, model);
+        
+        Vector rhs = tauList.subtract(velocityForces).subtract(endEffectorForces);
+        Matrix result = massMatrix.inverse().multiply(rhs);
+        return new Vector(result.getData());
+    }
+    
+    public static RobotState eulerStep(RobotState state, Vector ddThetaList) {
+        Vector thetaNext = state.getThetaList().add(
+            state.getDThetaList().scalarMulti(DT)
+        );
+        Vector dThetaNext = state.getDThetaList().add(
+            ddThetaList.scalarMulti(DT)
+        );
+        return new RobotState(thetaNext, dThetaNext);
+    }
+    
+    public static Matrix inverseDynamicsTrajectory(
+            List<RobotState> states, 
+            List<Vector> ddThetaMat, 
+            List<Vector6> ftipMat, 
+            RobotModel model) {
+        
+        int numSteps = ddThetaMat.size();
+        Matrix result = new Matrix(ddThetaMat.get(0).size(), numSteps);
+        
+        for (int i = 0; i < numSteps; i++) {
+            Vector tau = inverseDynamics(states.get(i), ddThetaMat.get(i), 
+                                        ftipMat.get(i), model);
+            Matrix.setSubMatrix(result.getData(), 0, i, tau.getData());
+        }
+        return result;
+    }
+    
+    public static List<RobotState> forwardDynamicsTrajectory(
+            RobotState initialState,
+            List<Vector> tauMat, 
+            List<Vector6> ftip, 
+            RobotModel model) {
+        
+        List<RobotState> trajectory = new ArrayList<>();
+        RobotState currentState = initialState;
+        
+        for (int i = 0; i < tauMat.size(); i++) {
+            Vector ddTheta = forwardDynamics(currentState, tauMat.get(i), 
+                                            ftip.get(i), model);
+            currentState = eulerStep(currentState, ddTheta);
+            trajectory.add(currentState);
+        }
+        return trajectory;
+    }
+    
+    // Private helper methods with Vector parameters
+    private static Matrix calculateMassMatrix(Vector thetaList, RobotModel model) {
+        DynamicsConfig config = initializeMatrices(thetaList, model);
+        Matrix part1 = config.getA6nx6n().transpose()
+                            .multiply(config.getLTheta6nx6n().transpose());
+        Matrix part2 = config.getG6nx6n()
+                            .multiply(config.getLTheta6nx6n())
+                            .multiply(config.getA6nx6n());
+        return part1.multiply(part2);
+    }
+    
+    private static Vector calculateVelocityForces(Vector thetaList, 
+                                                 Vector dThetaList, 
+                                                 RobotModel model) {
+        DynamicsConfig config = initializeMatrices(thetaList, model);
+        Matrix adAthetaDot = buildLieBracketAthetaDot(config.getAlist(), dThetaList);
+        Matrix twistStack = buildTwistStack(thetaList, model);
+        Matrix adV = buildDiagonalLieBracketOfTwists(twistStack);
+        Matrix wTheta = buildWTheta(config.getLTheta6nx6n());
+        
+        Matrix part1 = config.getA6nx6n().transpose()
+                            .multiply(config.getLTheta6nx6n().transpose());
+        Matrix part2 = config.getG6nx6n()
+                            .multiply(config.getLTheta6nx6n())
+                            .multiply(adAthetaDot)
+                            .multiply(wTheta);
+        Matrix part3 = adV.transpose()
+                         .multiply(config.getG6nx6n());
+        Matrix part4 = config.getLTheta6nx6n()
+                            .multiply(config.getA6nx6n())
+                            .multiply(dThetaList);
+        
+        Matrix result = part1.multiply(part2.add(part3)).multiply(part4);
+        return new Vector(result.getData());
+    }
+    
+    private static Vector calculateGravityForces(Vector thetaList, RobotModel model) {
+        DynamicsConfig config = initializeMatrices(thetaList, model);
+        Matrix part1 = config.getA6nx6n().transpose()
+                            .multiply(config.getLTheta6nx6n().transpose());
+        Matrix vDotBase = buildVDotBase(thetaList.size());
+        Matrix part2 = config.getG6nx6n()
+                            .multiply(config.getLTheta6nx6n())
+                            .multiply(vDotBase);
+        Matrix result = part1.multiply(part2);
+        return new Vector(result.getData());
+    }
+    
+    private static Vector calculateEndEffectorForces(Vector thetaList, 
+                                                    Vector6 ftip, 
+                                                    RobotModel model) {
+        List<Vector6> jacobian = JacobianBuilder.jacobianSpace(model.getSlist(), thetaList);
+        double[][] jacobianData = new double[VECTOR_SIZE][jacobian.size()];
+        
+        for (int i = 0; i < jacobian.size(); i++) {
+            Matrix.setSubMatrix(jacobianData, 0, i, jacobian.get(i).getData());
+        }
+        Matrix result = new Matrix(jacobianData).multiply(ftip);
+        return new Vector(result.getData());
+    }
+    
+    private static DynamicsConfig initializeMatrices(Vector thetaList, RobotModel model) {
+        List<Se3Algebra> alist = buildAthetaList(model.getSlist(), model.getMlist());
+        Matrix a6nx6n = buildA6nx6n(alist);
+        List<Se3Group> tlist = buildTList(model.getSlist(), thetaList);
+        Matrix lTheta6nx6n = buildLTheta6nx6n(tlist);
+        Matrix g6nx6n = buildG6nx6n(model.getGlist());
+        
+        return new DynamicsConfig(alist, a6nx6n, lTheta6nx6n, g6nx6n);
+    }
+    
+    private static List<Se3Algebra> buildAthetaList(List<Se3Algebra> slist, 
+                                                   List<Se3Group> mlist) {
+        List<Se3Algebra> alist = new ArrayList<>();
+        
+        for (int i = 0; i < slist.size(); i++) {
+            Matrix mInverse = mlist.get(i).matrix.inverse();
+            Vector6 sVec = Se3Algebra.se3ToVec(slist.get(i));
+            Matrix adj = Se3Group.adjoint(new Se3Group(mInverse)).adj;
+            alist.add(new Se3Algebra(adj.multiply(sVec)));
+        }
+        return alist;
+    }
+    
+    private static Matrix buildA6nx6n(List<Se3Algebra> alist) {
+        Matrix a6nx6n = new Matrix(alist.size() * VECTOR_SIZE, alist.size());
+        
+        for (int i = 0; i < alist.size(); i++) {
+            for (int j = 0; j < VECTOR_SIZE; j++) {
+                a6nx6n.set(j + VECTOR_SIZE * i, i, 
+                          alist.get(i).matrix.get(j, 0));
+            }
+        }
+        return a6nx6n;
+    }
+    
+    private static Matrix buildG6nx6n(List<SpatialInertia> glist) {
+        Matrix g6nx6n = new Matrix(glist.size() * VECTOR_SIZE, 
+                                  glist.size() * VECTOR_SIZE);
+        
+        for (int i = 0; i < glist.size(); i++) {
+            Matrix inertiaMatrix = glist.get(i).getMatrix();
+            for (int j = 0; j < VECTOR_SIZE; j++) {
+                for (int k = 0; k < VECTOR_SIZE; k++) {
+                    g6nx6n.set(j + VECTOR_SIZE * i, k + VECTOR_SIZE * i,
+                              inertiaMatrix.get(j, k));
+                }
+            }
+        }
+        return g6nx6n;
+    }
+    
+    private static Matrix buildLieBracketAthetaDot(List<Se3Algebra> alist, 
+                                                   Vector dThetaList) {
+        Matrix lieBracketMatrix = new Matrix(alist.size() * VECTOR_SIZE, 
+                                            alist.size() * VECTOR_SIZE);
+        
+        for (int i = 0; i < alist.size(); i++) {
+            Vector6 aVec = new Vector6(
+                alist.get(i).matrix.scalarMulti(dThetaList.get(i))
+            );
+            Se3Algebra aSe3alg = Se3Algebra.vecToSe3(aVec);
+            Matrix lieBracket = lieBracket(aSe3alg);
+            
+            for (int j = 0; j < VECTOR_SIZE; j++) {
+                for (int k = 0; k < VECTOR_SIZE; k++) {
+                    lieBracketMatrix.set(j + VECTOR_SIZE * i, 
+                                        k + VECTOR_SIZE * i,
+                                        lieBracket.get(j, k));
+                }
+            }
+        }
+        return lieBracketMatrix;
+    }
+    
+    private static List<Se3Group> buildTList(List<Se3Algebra> slist, 
+                                            Vector thetaList) {
+        List<Se3Group> tlist = new ArrayList<>();
+        Se3Group t = new Se3Group(Matrix.identity(4));
+        
+        for (int i = 0; i < slist.size(); i++) {
+            Matrix thetaScaled = slist.get(i).matrix.scalarMulti(thetaList.get(i));
+            Se3Algebra se3Alg = new Se3Algebra(thetaScaled);
+            Se3Group exp = Se3Ops.matrixExp6(se3Alg).se3g;
+            t = new Se3Group(exp.matrix.multiply(t.matrix));
+            tlist.add(t);
+        }
+        return tlist;
+    }
+    
+    private static Matrix buildTwistStack(Vector thetaList, RobotModel model) {
+        List<Matrix> jacobianBi = buildJacobianBi(thetaList, model);
+        Matrix twistStack = new Matrix(thetaList.size() * VECTOR_SIZE, 1);
+        
+        for (int i = 0; i < jacobianBi.size(); i++) {
+            Matrix jbiThetaDot = jacobianBi.get(i).multiply(thetaList);
+            Matrix.setSubMatrix(twistStack.getData(), i * VECTOR_SIZE, 0, 
+                              jbiThetaDot.getData());
+        }
+        return twistStack;
+    }
+    
+    private static Matrix buildDiagonalLieBracketOfTwists(Matrix twistStack) {
+        Matrix diagonalLieBracket = new Matrix(twistStack.getRows(), 
+                                              twistStack.getRows());
+        
+        for (int i = 0; i < twistStack.getRows() / VECTOR_SIZE; i++) {
+            Vector6 twist = new Vector6(
+                twistStack.getSubMatrix(i * VECTOR_SIZE, 0, VECTOR_SIZE, 1)
+            );
+            Matrix lieBracket = lieBracket(Se3Algebra.vecToSe3(twist));
+            Matrix.setSubMatrix(diagonalLieBracket.getData(), 
+                              i * VECTOR_SIZE, i * VECTOR_SIZE,
+                              lieBracket.getData());
+        }
+        return diagonalLieBracket;
+    }
+    
+    private static Matrix buildLTheta6nx6n(List<Se3Group> tlist) {
+        Matrix lTheta = new Matrix(tlist.size() * VECTOR_SIZE, 
+                                  tlist.size() * VECTOR_SIZE);
+        
+        for (int i = 0; i < tlist.size(); i++) {
+            Matrix.setSubMatrix(lTheta.getData(), i * VECTOR_SIZE, i * VECTOR_SIZE,
+                              Matrix.identity(VECTOR_SIZE).getData());
+            
+            for (int j = 0; j < i; j++) {
+                Matrix adj = Se3Group.adjoint(tlist.get(i)).adj;
+                Matrix.setSubMatrix(lTheta.getData(), i * VECTOR_SIZE, j * VECTOR_SIZE,
+                                  adj.getData());
+            }
+        }
+        return lTheta;
+    }
+    
+    private static Matrix buildWTheta(Matrix lTheta) {
+        Matrix wTheta = new Matrix(lTheta.getRows(), lTheta.getRows());
+        
+        for (int i = 0; i < (lTheta.getRows() / VECTOR_SIZE - 1); i++) {
+            Matrix subMatrix = lTheta.getSubMatrix((i + 1) * VECTOR_SIZE, 
+                                                  i * VECTOR_SIZE, 
+                                                  VECTOR_SIZE, VECTOR_SIZE);
+            Matrix.setSubMatrix(wTheta.getData(), i * VECTOR_SIZE, i * VECTOR_SIZE,
+                              subMatrix.getData());
+        }
+        return wTheta;
+    }
+    
+    private static Matrix buildVDotBase(int numLinks) {
+        Matrix vDotBase = new Matrix(numLinks * VECTOR_SIZE, 1);
+        Matrix.setSubMatrix(vDotBase.getData(), (numLinks - 1) * VECTOR_SIZE, 0,
+                          V_DOT_BASE.getData());
+        return vDotBase;
+    }
+    
+    private static List<Matrix> buildJacobianBi(Vector thetaList, RobotModel model) {
+        Se3Group tsb = ForwardKinematics.fKinSpace(
+            model.getMlist().get(thetaList.size()),
+            model.getSlist(), 
+            thetaList
+        );
+        
+        List<Se3Algebra> blist = new ArrayList<>();
+        for (Se3Algebra s : model.getSlist()) {
+            Matrix adj = Se3Group.adjoint(tsb).adj;
+            blist.add(new Se3Algebra(adj.multiply(s.matrix)));
+        }
+        
+        List<Vector6> jacobianBody = JacobianBuilder.jacobianBody(blist, thetaList);
+        List<Matrix> jacobianBi = new ArrayList<>();
+        
+        for (int i = 0; i < jacobianBody.size(); i++) {
+            double[][] temp = new double[VECTOR_SIZE][VECTOR_SIZE];
+            Matrix.setSubMatrix(temp, 0, i, jacobianBody.get(i).getData());
+            jacobianBi.add(new Matrix(temp));
+        }
+        
+        return jacobianBi;
+    }
+    
+    private static Matrix buildMassMatrixFromJacobians(List<Matrix> jacobianBi, 
+                                                       RobotModel model) {
+        Matrix massMatrix = new Matrix(jacobianBi.size() * VECTOR_SIZE);
+        
+        for (int i = 0; i < jacobianBi.size(); i++) {
+            Matrix jacobian = jacobianBi.get(i);
+            Matrix inertia = model.getGlist().get(i).getMatrix();
+            massMatrix.add(jacobian.transpose().multiply(inertia).multiply(jacobian));
+        }
+        return massMatrix;
+    }
+    
+    private static Vector6 createVdotBase() {
+        return new Vector6(0, 0, 0, 0, 0, GRAVITY);
+    }
+    
+    private static Matrix lieBracket(Se3Algebra se3alg) {
+        Matrix omg = se3alg.getOmega();
+        Matrix vel = se3alg.getVelocity();
+        double[][] lieBracket = Matrix.zeros(VECTOR_SIZE, VECTOR_SIZE).getData();
+        
+        Matrix.setSubMatrix(lieBracket, 0, 0, omg.getData());
+        Matrix.setSubMatrix(lieBracket, 3, 3, omg.getData());
+        Matrix.setSubMatrix(lieBracket, 3, 0, So3Algebra.vecToSo3(vel).matrix.getData());
+        
+        return new Matrix(lieBracket);
+    }
+}
 
-Links
-world
-base_link
-link1
-link2
-link3
-link4
-link5
-link6
-ee_link
-
-Joints
-world_joint
-  Position: (0.0, 0.0, 0.0) RPY: (0.0, 0.0, 0.0)
-  axis: (0.0, 0.0, 1.0)
-  world
-  base_link
-joint1
-  Position: (0.0, 0.0, 0.089159) RPY: (0.0, 0.0, 0.0)
-  axis: (0.0, 0.0, 1.0)
-  base_link
-  link1
-joint2
-  Position: (0.0, 0.13585, 0.0) RPY: (0.0, 1.5707964, 0.0)
-  axis: (0.0, 1.0, 0.0)
-  link1
-  link2
-joint3
-  Position: (0.0, -0.1197, 0.425) RPY: (0.0, 0.0, 0.0)
-  axis: (0.0, 1.0, 0.0)
-  link2
-  link3
-joint4
-  Position: (0.0, 0.0, 0.39225) RPY: (0.0, 1.5707964, 0.0)
-  axis: (0.0, 1.0, 0.0)
-  link3
-  link4
-joint5
-  Position: (0.0, 0.093, 0.0) RPY: (0.0, 0.0, 0.0)
-  axis: (0.0, 0.0, 1.0)
-  link4
-  link5
-joint6
-  Position: (0.0, 0.0, 0.09465) RPY: (0.0, 0.0, 0.0)
-  axis: (0.0, 1.0, 0.0)
-  link5
-  link6
-ee_joint
-  Position: (0.0, 0.0, 0.0) RPY: (0.0, 0.0, 0.0)
-  axis: (0.0, 0.0, 1.0)
-  link6
-  ee_link
-
-Tree
-world
-  base_link
-    link1
-      link2
-        link3
-          link4
-            link5
-              link6
-                ee_link
-Mim1i(0,1) =[ 1.0000  0.0000  0.0000  0.0000 ]
-[ 0.0000  1.0000  0.0000  0.0000 ]
-[ 0.0000  0.0000  1.0000  0.0000 ]
-[ 0.0000  0.0000  0.0000  1.0000 ]
-M0,0) =[ 1.0000  0.0000  0.0000  0.0000 ]
-[ 0.0000  1.0000  0.0000  0.0000 ]
-[ 0.0000  0.0000  1.0000  0.0000 ]
-[ 0.0000  0.0000  0.0000  1.0000 ]
-Mim1i(1,2) =[ 1.0000  0.0000  0.0000  0.0000 ]
-[ 0.0000  1.0000  0.0000  0.0000 ]
-[ 0.0000  0.0000  1.0000  0.0892 ]
-[ 0.0000  0.0000  0.0000  1.0000 ]
-M0,1) =[ 1.0000  0.0000  0.0000  0.0000 ]
-[ 0.0000  1.0000  0.0000  0.0000 ]
-[ 0.0000  0.0000  1.0000  0.0892 ]
-[ 0.0000  0.0000  0.0000  1.0000 ]
-Mim1i(2,3) =[ -0.0000   0.0000   1.0000   0.0000 ]
-[  0.0000   1.0000   0.0000   0.1358 ]
-[ -1.0000   0.0000  -0.0000   0.0000 ]
-[  0.0000   0.0000   0.0000   1.0000 ]
-M0,2) =[ -0.0000   0.0000   1.0000   0.0000 ]
-[  0.0000   1.0000   0.0000   0.1358 ]
-[ -1.0000   0.0000  -0.0000   0.0000 ]
-[  0.0000   0.0000   0.0000   1.0000 ]
-Mim1i(3,4) =[  1.0000   0.0000   0.0000   0.0000 ]
-[  0.0000   1.0000   0.0000  -0.1197 ]
-[  0.0000   0.0000   1.0000   0.4250 ]
-[  0.0000   0.0000   0.0000   1.0000 ]
-M0,3) =[  1.0000   0.0000   0.0000   0.0000 ]
-[  0.0000   1.0000   0.0000  -0.1197 ]
-[  0.0000   0.0000   1.0000   0.4250 ]
-[  0.0000   0.0000   0.0000   1.0000 ]
-Mim1i(4,5) =[ -0.0000   0.0000   1.0000   0.0000 ]
-[  0.0000   1.0000   0.0000   0.0000 ]
-[ -1.0000   0.0000  -0.0000   0.3923 ]
-[  0.0000   0.0000   0.0000   1.0000 ]
-M0,4) =[ -0.0000   0.0000   1.0000   0.0000 ]
-[  0.0000   1.0000   0.0000   0.0000 ]
-[ -1.0000   0.0000  -0.0000   0.3923 ]
-[  0.0000   0.0000   0.0000   1.0000 ]
-Mim1i(5,6) =[ 1.0000  0.0000  0.0000  0.0000 ]
-[ 0.0000  1.0000  0.0000  0.0930 ]
-[ 0.0000  0.0000  1.0000  0.0000 ]
-[ 0.0000  0.0000  0.0000  1.0000 ]
-M0,5) =[ 1.0000  0.0000  0.0000  0.0000 ]
-[ 0.0000  1.0000  0.0000  0.0930 ]
-[ 0.0000  0.0000  1.0000  0.0000 ]
-[ 0.0000  0.0000  0.0000  1.0000 ]
-Mim1i(6,7) =[ 1.0000  0.0000  0.0000  0.0000 ]
-[ 0.0000  1.0000  0.0000  0.0000 ]
-[ 0.0000  0.0000  1.0000  0.0947 ]
-[ 0.0000  0.0000  0.0000  1.0000 ]
-M0,6) =[ 1.0000  0.0000  0.0000  0.0000 ]
-[ 0.0000  1.0000  0.0000  0.0000 ]
-[ 0.0000  0.0000  1.0000  0.0947 ]
-[ 0.0000  0.0000  0.0000  1.0000 ]
-Mim1i(7,8) =[ 1.0000  0.0000  0.0000  0.0000 ]
-[ 0.0000  1.0000  0.0000  0.0000 ]
-[ 0.0000  0.0000  1.0000  0.0000 ]
-[ 0.0000  0.0000  0.0000  1.0000 ]
-M0,7) =[ 1.0000  0.0000  0.0000  0.0000 ]
-[ 0.0000  1.0000  0.0000  0.0000 ]
-[ 0.0000  0.0000  1.0000  0.0000 ]
-[ 0.0000  0.0000  0.0000  1.0000 ]
-xvxvx[  1.0000   0.0000   0.0000   1.0000 ]
-[  0.0000  -0.0000  -1.0000   2.0000 ]
-[  0.0000   1.0000  -0.0000   3.0000 ]
-[  0.0000   0.0000   0.0000   1.0000 ]
-M=[ -1.0000   0.0000  -0.0000   0.8173 ]
-[  0.0000   1.0000   0.0000   0.1091 ]
-[  0.0000   0.0000  -1.0000  -0.0055 ]
-[  0.0000   0.0000   0.0000   1.0000 ]
-slist(0)=[  0.0000  -1.0000   0.0000  -0.0000 ]
-[  1.0000   0.0000  -0.0000   0.0000 ]
-[ -0.0000   0.0000   0.0000  -0.0000 ]
-[  0.0000   0.0000   0.0000   0.0000 ]
-slist(1)=[  0.0000  -1.0000   0.0000  -0.0000 ]
-[  1.0000   0.0000  -0.0000   0.0000 ]
-[ -0.0000   0.0000   0.0000  -0.0000 ]
-[  0.0000   0.0000   0.0000   0.0000 ]
-slist(2)=[  0.0000  -0.0000   1.0000   0.0892 ]
-[  0.0000   0.0000  -0.0000   0.0000 ]
-[ -1.0000   0.0000   0.0000  -0.0000 ]
-[  0.0000   0.0000   0.0000   0.0000 ]
-slist(3)=[  0.0000  -0.0000   1.0000   0.0892 ]
-[  0.0000   0.0000  -0.0000   0.0000 ]
-[ -1.0000   0.0000   0.0000  -0.4250 ]
-[  0.0000   0.0000   0.0000   0.0000 ]
-slist(4)=[  0.0000  -0.0000   1.0000   0.0892 ]
-[  0.0000   0.0000  -0.0000   0.0000 ]
-[ -1.0000   0.0000   0.0000  -0.8173 ]
-[  0.0000   0.0000   0.0000   0.0000 ]
-slist(5)=[  0.0000   1.0000   0.0000   0.1091 ]
-[ -1.0000   0.0000   0.0000  -0.8173 ]
-[ -0.0000  -0.0000   0.0000  -0.0000 ]
-[  0.0000   0.0000   0.0000   0.0000 ]
-slist(6)=[  0.0000  -0.0000   1.0000  -0.0055 ]
-[  0.0000   0.0000  -0.0000   0.0000 ]
-[ -1.0000   0.0000   0.0000  -0.8173 ]
-[  0.0000   0.0000   0.0000   0.0000 ]
-slist(7)=[  0.0000   1.0000   0.0000   0.1091 ]
-[ -1.0000   0.0000   0.0000  -0.8173 ]
-[ -0.0000  -0.0000   0.0000  -0.0000 ]
-[  0.0000   0.0000   0.0000   0.0000 ]
-this is my computed values
-<?xml version="1.0" ?>
-<robot name="ur5">
-	<!-- ********** KINEMATIC PROPERTIES (JOINTS) ********** -->
-	<joint name="world_joint" type="fixed">
-		<parent link="world"/>
-		<child link="base_link"/>
-		<origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
-	</joint>
-	<joint name="joint1" type="continuous">
-		<parent link="base_link"/>
-		<child link="link1"/>
-		<origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.089159"/>
-		<axis xyz="0 0 1"/>
-	</joint>
-	<joint name="joint2" type="continuous">
-		<parent link="link1"/>
-		<child link="link2"/>
-		<origin rpy="0.0 1.570796325 0.0" xyz="0.0 0.13585 0.0"/>
-		<axis xyz="0 1 0"/>
-	</joint>
-	<joint name="joint3" type="continuous">
-		<parent link="link2"/>
-		<child link="link3"/>
-		<origin rpy="0.0 0.0 0.0" xyz="0.0 -0.1197 0.425"/>
-		<axis xyz="0 1 0"/>
-	</joint>
-	<joint name="joint4" type="continuous">
-		<parent link="link3"/>
-		<child link="link4"/>
-		<origin rpy="0.0 1.570796325 0.0" xyz="0.0 0.0 0.39225"/>
-		<axis xyz="0 1 0"/>
-	</joint>
-	<joint name="joint5" type="continuous">
-		<parent link="link4"/>
-		<child link="link5"/>
-		<origin rpy="0.0 0.0 0.0" xyz="0.0 0.093 0.0"/>
-		<axis xyz="0 0 1"/>
-	</joint>
-	<joint name="joint6" type="continuous">
-		<parent link="link5"/>
-		<child link="link6"/>
-		<origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.09465"/>
-		<axis xyz="0 1 0"/>
-	</joint>
-	<joint name="ee_joint" type="fixed">
-		<origin rpy="-1.570796325 0 0" xyz="0 0.0823 0"/>
-		<parent link="link6"/>
-		<child link="ee_link"/>
-	</joint>
-	<!-- ********** INERTIAL PROPERTIES (LINKS) ********** -->
-	<link name="world"/>
-	<link name="base_link">
-		<inertial>
-			<mass value="4.0"/>
-			<origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
-			<inertia ixx="0.00443333156" ixy="0.0" ixz="0.0"
-				iyy="0.00443333156" iyz="0.0" izz="0.0072"/>
-		</inertial>
-	</link>
-	<link name="link1">
-		<inertial>
-			<mass value="3.7"/>
-			<origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
-			<inertia ixx="0.010267495893" ixy="0.0" ixz="0.0"
-				iyy="0.010267495893" iyz="0.0" izz="0.00666"/>
-		</inertial>
-	</link>
-	<link name="link2">
-		<inertial>
-			<mass value="8.393"/>
-			<origin rpy="0 0 0" xyz="0.0 0.0 0.28"/>
-			<inertia ixx="0.22689067591" ixy="0.0" ixz="0.0"
-				iyy="0.22689067591" iyz="0.0" izz="0.0151074"/>
-		</inertial>
-	</link>
-	<link name="link3">
-		<inertial>
-			<mass value="2.275"/>
-			<origin rpy="0 0 0" xyz="0.0 0.0 0.25"/>
-			<inertia ixx="0.049443313556" ixy="0.0" ixz="0.0"
-				iyy="0.049443313556" iyz="0.0" izz="0.004095"/>
-		</inertial>
-	</link>
-	<link name="link4">
-		<inertial>
-			<mass value="1.219"/>
-			<origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
-			<inertia ixx="0.111172755531" ixy="0.0" ixz="0.0"
-				iyy="0.111172755531" iyz="0.0" izz="0.21942"/>
-		</inertial>
-	</link>
-	<link name="link5">
-		<inertial>
-			<mass value="1.219"/>
-			<origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
-			<inertia ixx="0.111172755531" ixy="0.0" ixz="0.0"
-				iyy="0.111172755531" iyz="0.0" izz="0.21942"/>
-		</inertial>
-	</link>
-	<link name="link6">
-		<inertial>
-			<mass value="0.1879"/>
-			<origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
-			<inertia ixx="0.0171364731454" ixy="0.0" ixz="0.0"
-				iyy="0.0171364731454" iyz="0.0" izz="0.033822"/>
-		</inertial>
-	</link>
-	<link name="ee_link"/>
-</robot>
-this is urdf are values okay
+	
+  

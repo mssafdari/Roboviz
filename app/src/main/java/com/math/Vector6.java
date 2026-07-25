@@ -5,13 +5,13 @@ class axis6theta{
 	double theta;
 }
 
-public class Vector6 extends Matrix {
+public class Vector6 extends Vector {
 	
     public Vector3 omega;
 	public Vector3 velocity;
     
     public Vector6(){
-        super(6, 1);
+        super(6);
         omega=new Vector3();
         velocity = new Vector3();
     }

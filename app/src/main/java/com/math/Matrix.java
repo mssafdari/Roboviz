@@ -129,6 +129,28 @@ public class Matrix
         }
         return result;
     }
+	
+	public Vector multiply(Vector other) {
+        if (this.cols != other.rows) {
+            throw new IllegalArgumentException(
+                "Matrix dimensions don't match for multiplication."
+            );
+        }
+
+        Matrix result = new Matrix(Matrix.zeros(this.rows, other.cols).data);
+
+        // Correct loop order: rows of first matrix
+        for (int i = 0; i < this.rows; i++) {        // Change: rows first
+            for (int j = 0; j < other.cols; j++) {   // Then columns of second
+                double sum = 0;
+                for (int k = 0; k < this.cols; k++) {
+                    sum += this.data[i][k] * other.data[k][j];
+                }
+                result.data[i][j] = sum;
+            }
+        }
+        return new Vector(result.getData());
+    }
     
     public Matrix transpose()
 	{

@@ -258,7 +258,15 @@ public class Matrix
 		return minor;
 	}
 	public Matrix pseudoInverse(){
-		return Matrix.identity(4);//to do change
+		if(getRows()>=getCols()){
+			Matrix ATA=this.transpose().multiply(this);
+			return ATA.inverse().multiply(this.transpose());
+		}
+		else if(getRows()<getCols()){
+			Matrix AAT=this.multiply(this.transpose());
+			return this.transpose().multiply(AAT.inverse());
+		}
+		throw new IllegalStateException("something terrible happened in pseudo inverse");
 	}
     public Matrix inverse()
 	{

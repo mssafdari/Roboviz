@@ -1,8 +1,9 @@
 package com.kinematics;
 import com.math.Matrix;
+import com.math.Vector;
 
 public class IKresult
 {
-	boolean success=false;
-	Matrix thetaList;
+	public boolean success=false;
+	public Vector thetaList;
 }

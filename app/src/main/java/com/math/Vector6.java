@@ -60,5 +60,11 @@ public class Vector6 extends Vector {
 		}
 		return at;
 	}
-	
+	public static Vector6 getColumnAsVec6(double[][] data,int col){
+		if(data.length!=6){
+			throw new IllegalArgumentException("rows must be 6");
+		}
+		return new Vector6(new Vector3(data[0][col],data[0][col],data[0][col]),
+		                   new Vector3(data[0][col],data[0][col],data[0][col]));
+	}
 }

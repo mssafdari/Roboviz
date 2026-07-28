@@ -9,6 +9,7 @@ import com.math.Vector6;
 import java.util.ArrayList;
 import com.math.Vector3;
 import javax.xml.transform.Result;
+import com.math.Vector;
 
 public class inversekinematics
 {
@@ -16,13 +17,14 @@ public class inversekinematics
 	public static double ev=0.000001;
 	public static int maxIterations=100;
 
-	public static IKresult IKinBody(ArrayList<se3algebra> Blist, se3group M, se3algebra T, Matrix thetaList0)
+	public static IKresult IKinBody(ArrayList<se3algebra> Blist, se3group M, se3group T, Vector thetaList0)
 	{
 		int iteration=0;
 		ArrayList<Vector6> jb=jacobianBuilder.JacobianBody(Blist, thetaList0);
 		Vector3 Wb= new Vector3();
 		Vector3 Vb= new Vector3();
-		Matrix thetaList,jbody;
+		Vector thetaList;
+		Matrix jbody;
 		se3group Tsb,X;
 		se3algebra bodyse3alg;
 		do{
@@ -46,7 +48,7 @@ public class inversekinematics
 	//Vb=MatrixLog6(x);
 	//Vs=VecTose3(Adjoint(Tsb)*se3ToVec(Vb));
 
-	public static IKresult IKinSpace(ArrayList<se3algebra> Slist, se3group M, se3algebra T, Matrix thetaList0)
+	public static IKresult IKinSpace(ArrayList<se3algebra> Slist, se3group M, se3group T, Vector thetaList0)
 	{
 		int iteration =0;
 		ArrayList<Vector6> js=jacobianBuilder.JacobianSpace(Slist, thetaList0);
@@ -54,7 +56,8 @@ public class inversekinematics
 		Vector3 Vs= new Vector3();
 		se3group Tsb,X;
 		se3algebra bodyse3alg,spacese3alg;
-		Matrix thetaList,jSpace;
+		Vector thetaList;
+		Matrix jSpace;
 		do{
 			Tsb=forwardKinematics.FKinSpace(M, Slist, thetaList0);
 			X = new se3group(Tsb.matrix.inverse().multiply(T.matrix));
@@ -74,7 +77,7 @@ public class inversekinematics
 		}
 		return Result;
 	}
-
+	
 	private static Matrix ArrayListToMatrix(ArrayList<Vector6> list)
 	{
 		Matrix res = new Matrix(6, list.size());

@@ -1,4 +1,5 @@
 package com.math;
+import java.util.ArrayList;
 
 public class se3algebra
 {
@@ -25,6 +26,18 @@ public class se3algebra
 		Matrix.setSubMatrix(vecTo.matrix.data,3,0,Matrix.zeros(1,4).data);
 		return vecTo;
 	}
+	
+	public static ArrayList<se3algebra> doubleToSe3algebraArray(double[][] data){
+		if(data.length != 6){
+			throw new IllegalArgumentException("row size should be 6");
+		}
+		ArrayList<se3algebra> array=new ArrayList<se3algebra>();
+		for(int i=0;i<data[0].length;i++){
+			array.add(se3algebra.vecToSe3(Vector6.getColumnAsVec6(data,i)));
+		}
+		return array;
+	}
+	
 	public Vector3 getVelocity(){
         return new Vector3(matrix.data[0][3],matrix.data[1][3],matrix.data[2][3]);
     }
@@ -33,4 +46,5 @@ public class se3algebra
 		so3algebra omg= new so3algebra(rot);
         return so3algebra.so3ToVec(omg);
     }
+	
 }

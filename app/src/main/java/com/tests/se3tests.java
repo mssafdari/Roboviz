@@ -293,8 +293,9 @@ public class se3tests extends BaseTest
             Matrix res = msc.multiply(msb.inverse());
             se3opslog se3alg = se3ops.matrixLog6(new se3group(res));
             errorReport +=se3alg.log;
+			errorReport="";//silencing
             return se3alg.se3alg.matrix.isEqual(me);
-
+            
         }
         catch (Exception e)
         {

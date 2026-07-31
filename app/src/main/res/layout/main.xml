@@ -27,5 +27,11 @@
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:gravity="center"/>
+	<Button
+        android:id="@+id/goToRobotButton"
+        android:text="Test"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:gravity="center"/>
 
 </LinearLayout>

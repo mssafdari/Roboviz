@@ -64,7 +64,7 @@ public class Vector6 extends Vector {
 		if(data.length!=6){
 			throw new IllegalArgumentException("rows must be 6");
 		}
-		return new Vector6(new Vector3(data[0][col],data[0][col],data[0][col]),
-		                   new Vector3(data[0][col],data[0][col],data[0][col]));
+		return new Vector6(new Vector3(data[0][col],data[1][col],data[2][col]),
+		                   new Vector3(data[3][col],data[4][col],data[5][col]));
 	}
 }

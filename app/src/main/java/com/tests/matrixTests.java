@@ -8,10 +8,13 @@ import android.widget.Button;
 import android.view.*;
 import android.app.Activity;
 import com.roboviz.R;
-import android.os.Environment;  
+import android.os.Environment;
+import java.security.Identity;  
 
 public class matrixTests extends BaseTest {
     private static final String TAG = "matrix test";
+	private String errorReport="";
+	private static final String el="\n";
 
     @Override
     protected String getTestTag() {
@@ -23,7 +26,8 @@ public class matrixTests extends BaseTest {
         return new String[]{
             "testing matrix multiplication",
             "testing transpose",
-            "testing inverse"
+            "testing inverse",
+			"testPseudoInverse"
         };
     }
 
@@ -32,13 +36,15 @@ public class matrixTests extends BaseTest {
         return new boolean[]{
             testMatrixMultiply(),
             testTranspose(),
-            testInverse()
+            testInverse(),
+			testPseudoInverse()
         };
     }
     
     @Override
-    protected String getError(){
-        return "";
+    protected String getError()
+    {
+        return errorReport;
     }
 
     // Individual test methods return boolean instead of String
@@ -77,4 +83,21 @@ public class matrixTests extends BaseTest {
         Matrix matMatInv = mat.multiply(matInv);
         return matMatInv.isEqual(Matrix.identity(5));
     }
+	
+	private boolean testPseudoInverse(){
+		try{
+		Matrix mat=Matrix.rand(4,6);
+		Matrix pseudo=mat.pseudoInverse();
+	    errorReport+="mat="+el+mat.toString()+el;
+			errorReport+="pseudo="+el+pseudo.toString()+el;
+		Matrix identity= mat.multiply(mat.pseudoInverse());
+		errorReport+="pseudo * mat="+el+identity.toString()+el;
+		return identity.isEqual(Matrix.identity(4));	
+		}
+		catch (Exception e)
+        {
+            errorReport += e.getMessage() + "from FKinBody\n";
+            return false;
+        }
+	}
 }

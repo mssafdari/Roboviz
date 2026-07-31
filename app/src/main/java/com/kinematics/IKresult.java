@@ -6,4 +6,5 @@ public class IKresult
 {
 	public boolean success=false;
 	public Vector thetaList;
+	public String log="";
 }

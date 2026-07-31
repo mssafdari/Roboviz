@@ -17,5 +17,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".RobotControlActivity"
+            android:label="Robot Control"
+            android:screenOrientation="portrait" />
     </application>
 </manifest>

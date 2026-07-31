@@ -1,5 +1,6 @@
 package com.math;
 import java.util.ArrayList;
+import org.apache.commons.math3.util.ArithmeticUtils;
 
 public class se3algebra
 {
@@ -9,6 +10,10 @@ public class se3algebra
 	}
     public se3algebra(Vector3 omega,Vector3 vel){
         matrix=se3algebra.vecToSe3(new Vector6(omega,vel)).matrix;
+    }
+	
+	public se3algebra(Vector6 vec6){
+        matrix=se3algebra.vecToSe3(vec6).matrix;
     }
 	
 	public static Vector6 se3ToVec(se3algebra se3)

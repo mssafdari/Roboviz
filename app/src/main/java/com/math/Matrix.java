@@ -257,6 +257,96 @@ public class Matrix
 		}
 		return minor;
 	}
+	
+	public Matrix[] svd() {
+		int m = getRows();
+		int n = getCols();
+		Matrix A = this.clone();
+		Matrix U = new Matrix(m, m).identity(m);
+		Matrix V = new Matrix(n, n).identity(n);
+		double eps = 1e-10;
+		int maxSweeps = 50;
+
+		for (int sweep = 0; sweep < maxSweeps; sweep++) {
+			double maxOffDiag = 0;
+			int p = -1, q = -1;
+
+			// Find the largest off-diagonal element in AᵀA
+			for (int i = 0; i < n; i++) {
+				for (int j = i + 1; j < n; j++) {
+					double a = 0;
+					for (int k = 0; k < m; k++) {
+						a += A.get(k, i) * A.get(k, j);
+					}
+					if (Math.abs(a) > maxOffDiag) {
+						maxOffDiag = Math.abs(a);
+						p = i;
+						q = j;
+					}
+				}
+			}
+
+			if (maxOffDiag < eps) break; // Converged
+
+			// Compute Jacobi rotation
+			double theta = 0.5 * Math.atan2(2 * maxOffDiag, A.get(p, p) - A.get(q, q));
+			double c = Math.cos(theta);
+			double s = Math.sin(theta);
+
+			// Apply rotation to A
+			for (int k = 0; k < m; k++) {
+				double ap = A.get(k, p);
+				double aq = A.get(k, q);
+				A.set(k, p, c * ap - s * aq);
+				A.set(k, q, s * ap + c * aq);
+			}
+
+			// Update V
+			for (int k = 0; k < n; k++) {
+				double vp = V.get(k, p);
+				double vq = V.get(k, q);
+				V.set(k, p, c * vp - s * vq);
+				V.set(k, q, s * vp + c * vq);
+			}
+		}
+
+		// Compute U from A and V
+		Matrix S = new Matrix(n, n);
+		Matrix Ut = new Matrix(m, n);
+		for (int i = 0; i < n; i++) {
+			double norm = 0;
+			for (int k = 0; k < m; k++) {
+				norm += A.get(k, i) * A.get(k, i);
+			}
+			norm = Math.sqrt(norm);
+			S.set(i, i, norm);
+			for (int k = 0; k < m; k++) {
+				Ut.set(k, i, A.get(k, i) / norm);
+			}
+		}
+
+		return new Matrix[]{Ut, S, V.transpose()};
+	}
+	
+	/*public Matrix pseudoInverse() {
+		// Compute SVD: A = U Σ Vᵀ
+		Matrix[] svd = this.svd();
+		Matrix U = svd[0];
+		Matrix S = svd[1];
+		Matrix Vt = svd[2];
+
+		// Compute Σ⁺ (pseudoinverse of Σ)
+		Matrix SPlus = new Matrix(Vt.getCols(), U.getCols());
+		for (int i = 0; i < S.getRows(); i++) {
+			if (S.get(i, i) > 1e-10) { // Avoid division by zero (tolerance for "zero" singular values)
+				SPlus.set(i, i, 1.0 / S.get(i, i));
+			}
+		}
+
+		// Pseudoinverse: A⁺ = V Σ⁺ Uᵀ
+		return Vt.transpose().multiply(SPlus).multiply(U.transpose());
+	}*/
+	
 	public Matrix pseudoInverse(){
 		if(getRows()>=getCols()){
 			Matrix ATA=this.transpose().multiply(this);

@@ -16,30 +16,36 @@ public class inversekinematics
 	public static double eomg=0.000001;
 	public static double ev=0.000001;
 	public static int maxIterations=100;
-
+    private static IKresult Result= new IKresult();
+	private static String el="\n";
+	
 	public static IKresult IKinBody(ArrayList<se3algebra> Blist, se3group M, se3group T, Vector thetaList0)
 	{
+		Result.success=false;
 		int iteration=0;
-		ArrayList<Vector6> jb=jacobianBuilder.JacobianBody(Blist, thetaList0);
+		ArrayList<Vector6> jb;
 		Vector3 Wb= new Vector3();
 		Vector3 Vb= new Vector3();
 		Vector thetaList;
 		Matrix jbody;
 		se3group Tsb,X;
 		se3algebra bodyse3alg;
+		thetaList=thetaList0;
+		Result.log+=thetaList.toString();
 		do{
-			Tsb=forwardKinematics.FKinBody(M, Blist, thetaList0);
+			jb=jacobianBuilder.JacobianBody(Blist, thetaList);
+			Tsb=forwardKinematics.FKinBody(M, Blist, thetaList);
 			X = new se3group(Tsb.matrix.inverse().multiply(T.matrix));//x=Tsb\T
 			bodyse3alg=se3ops.matrixLog6(X).se3alg;
 			jbody=ArrayListToMatrix(jb);
-			thetaList = thetaList0.add(jbody.pseudoInverse().multiply(se3algebra.se3ToVec(bodyse3alg)));
+			thetaList = thetaList.add(jbody.pseudoInverse().multiply(se3algebra.se3ToVec(bodyse3alg)));
 			Wb = bodyse3alg.getOmega();
 			Vb = bodyse3alg.getVelocity();
 			iteration++;
 		}while((Wb.norm() > eomg || Vb.norm() > ev) && iteration<maxIterations);
-		IKresult Result= new IKresult();
+		Result.log+="wb.norm="+Wb.norm()+el+"vb.norm="+Vb.norm()+el;
 		Result.thetaList = thetaList;
-		if (maxIterations > 0)
+		if (maxIterations > iteration)
 		{
 			Result.success = true;
 		}
@@ -50,35 +56,40 @@ public class inversekinematics
 
 	public static IKresult IKinSpace(ArrayList<se3algebra> Slist, se3group M, se3group T, Vector thetaList0)
 	{
+		Result.success=false;
 		int iteration =0;
-		ArrayList<Vector6> js=jacobianBuilder.JacobianSpace(Slist, thetaList0);
+		ArrayList<Vector6> js;
 		Vector3 Ws= new Vector3();
 		Vector3 Vs= new Vector3();
 		se3group Tsb,X;
 		se3algebra bodyse3alg,spacese3alg;
 		Vector thetaList;
 		Matrix jSpace;
+		thetaList=thetaList0;
+		Result.log+=thetaList.toString();
 		do{
-			Tsb=forwardKinematics.FKinSpace(M, Slist, thetaList0);
+			js=jacobianBuilder.JacobianSpace(Slist, thetaList);
+			Tsb=forwardKinematics.FKinSpace(M, Slist, thetaList);
 			X = new se3group(Tsb.matrix.inverse().multiply(T.matrix));
 			bodyse3alg=se3ops.matrixLog6(X).se3alg;
 			spacese3alg=se3algebra.vecToSe3( new Vector6( se3group.adjoint(Tsb).adj.multiply(se3algebra.se3ToVec(bodyse3alg))));
 			jSpace=ArrayListToMatrix(js);
-			thetaList = thetaList0.add(jSpace.pseudoInverse().multiply(se3algebra.se3ToVec(spacese3alg)));
-			Ws = bodyse3alg.getOmega();
-			Vs = bodyse3alg.getVelocity();
+			thetaList = thetaList.add(jSpace.pseudoInverse().multiply(se3algebra.se3ToVec(spacese3alg)));
+			Ws = spacese3alg.getOmega();
+			Vs = spacese3alg.getVelocity();
 			iteration++;
 		}while((Ws.norm() > eomg || Vs.norm() > ev ) && iteration<maxIterations);
-		IKresult Result= new IKresult();
+		Result.log+="wb.norm="+Ws.norm()+el+"vb.norm="+Vs.norm()+el;
+		
 		Result.thetaList = thetaList;
-		if (maxIterations > 0)
+		if (maxIterations > iteration)
 		{
 			Result.success = true;
 		}
 		return Result;
 	}
 	
-	private static Matrix ArrayListToMatrix(ArrayList<Vector6> list)
+	public static Matrix ArrayListToMatrix(ArrayList<Vector6> list)
 	{
 		Matrix res = new Matrix(6, list.size());
 		for (int i=0;i < res.getCols();i++)

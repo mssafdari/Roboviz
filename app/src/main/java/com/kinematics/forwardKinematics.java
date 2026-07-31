@@ -13,8 +13,8 @@ public class forwardKinematics
         se3group endEffectorT=M;
         for (int i=0;i < thetaList.getRows();i++)
 		{
-            se3algebra se3alg = new se3algebra(Matrix.scalarMulti(thetaList.get(i, 0), Blist.get(i).matrix));
-            endEffectorT.matrix = endEffectorT.matrix.multiply(se3ops.matrixExp6(se3alg).se3alg.matrix);
+            se3algebra se3alg = new se3algebra(Matrix.scalarMulti(thetaList.get(i), Blist.get(i).matrix));
+            endEffectorT.matrix = endEffectorT.matrix.multiply(se3ops.matrixExp6(se3alg).se3g.matrix);
 		}
         return endEffectorT;
     }
@@ -23,8 +23,8 @@ public class forwardKinematics
         se3group endEffectorT=new se3group(Matrix.identity(4));
         for (int i=0;i < thetaList.getRows();i++)
 		{
-            se3algebra se3alg = new se3algebra(Matrix.scalarMulti(thetaList.get(i, 0), Slist.get(i).matrix));
-            endEffectorT.matrix = endEffectorT.matrix.multiply((se3ops.matrixExp6(se3alg).se3alg.matrix));
+            se3algebra se3alg = new se3algebra(Matrix.scalarMulti(thetaList.get(i), Slist.get(i).matrix));
+            endEffectorT.matrix = endEffectorT.matrix.multiply((se3ops.matrixExp6(se3alg).se3g.matrix));
         }
         endEffectorT.matrix = endEffectorT.matrix.multiply(M.matrix);
         return endEffectorT;

@@ -7,6 +7,7 @@ import com.math.se3ops;
 import com.math.so3group;
 import com.math.Vector3;
 import com.math.so3ops;
+import com.math.se3algebra;
 
 public class trajectory
 {
@@ -59,20 +60,20 @@ public class trajectory
 	{
 		double dt=Tf / (N - 1);
 		ArrayList<se3group> Jtrajectory=new ArrayList<se3group>();
-		se3group temp= new se3group(Matrix.identity(4));
+		se3algebra temp;
 		se3group XstartInv=new se3group(Xstart.matrix.inverse());
 		if (method == timeScalingMethod.CUBIC)
 			for (int i=0;i < N;i++)
 			{
-				temp= se3ops.matrixLog6(new se3group(XstartInv.matrix.multiply(Xend.matrix))).se3g;
-				temp =new se3group(Xstart.matrix.multiply(Matrix.scalarMulti(cubicTimeScaling(Tf,i*dt),temp.matrix)));
+				temp= se3ops.matrixLog6(new se3group(XstartInv.matrix.multiply(Xend.matrix)));
+				temp =new se3algebra(Xstart.matrix.multiply(Matrix.scalarMulti(cubicTimeScaling(Tf,i*dt),temp.matrix)));
 				Jtrajectory.add(temp);
 			}
 			else{
 				for (int i=0;i < N;i++)
 				{
-					temp= se3ops.matrixLog6(new se3group(XstartInv.matrix.multiply(Xend.matrix))).se3g;
-					temp =new se3group(Xstart.matrix.multiply(Matrix.scalarMulti(quinticTimeScaling(Tf,i*dt),temp.matrix)));
+					temp= se3ops.matrixLog6(new se3group(XstartInv.matrix.multiply(Xend.matrix)));
+					temp =new se3algebra(Xstart.matrix.multiply(Matrix.scalarMulti(quinticTimeScaling(Tf,i*dt),temp.matrix)));
 					Jtrajectory.add(temp);
 				}
 			}

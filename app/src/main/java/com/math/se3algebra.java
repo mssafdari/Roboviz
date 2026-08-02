@@ -1,6 +1,5 @@
 package com.math;
 import java.util.ArrayList;
-import org.apache.commons.math3.util.ArithmeticUtils;
 
 public class se3algebra
 {

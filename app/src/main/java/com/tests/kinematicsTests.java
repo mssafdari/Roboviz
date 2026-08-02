@@ -11,6 +11,8 @@ import com.kinematics.inversekinematics;
 import com.kinematics.jacobianBuilder;
 import com.math.Vector6;
 import com.math.Vector3;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 
 public class kinematicsTests extends BaseTest
 {
@@ -191,19 +193,28 @@ public class kinematicsTests extends BaseTest
 			Blist.add(new se3algebra(new Vector6(se3group.adjoint(Minv).adj.multiply(se3algebra.se3ToVec(se1)))));
 			Blist.add(new se3algebra(new Vector6(se3group.adjoint(Minv).adj.multiply(se3algebra.se3ToVec(se2)))));
 			Blist.add(new se3algebra(new Vector6(se3group.adjoint(Minv).adj.multiply(se3algebra.se3ToVec(se3)))));
+            for(int i=0;i<Blist.size();i++){
+             errorReport+="b("+i+")"+Blist.get(i).matrix.toString()+el;
+             }
 			double[][] thetaL=new double[][]{{0},{0},{Math.PI / 2}};
 			Vector thetaList=new Vector(thetaL);
             se3group ee= forwardKinematics.FKinBody(M, Blist, thetaList);
-			errorReport="before ik body"+el+ee.matrix.toString()+el;
+			errorReport+="before ik body"+el+ee.matrix.toString()+el;
 			IKresult thetaListInv=inversekinematics.IKinBody(Blist,M,ee,new Vector(new double[][]{{.1},{.1},{.1}}));
-			errorReport+=thetaListInv.thetaList.toString()+el+thetaListInv.success+el;
+			//errorReport+=thetaListInv.thetaList.toString()+el+thetaListInv.success+el;
 			errorReport+=thetaListInv.log;
 			errorReport+="fk_ik="+el+forwardKinematics.FKinBody(M,Blist,thetaListInv.thetaList).matrix.toString()+el;
 			return thetaListInv.thetaList.isEqual(thetaList);
         }
         catch (Exception e)
         {
-            errorReport += e.getMessage() + "from IKBody\n";
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            String stackTrace = sw.toString();
+
+            errorReport += "Exception: " + e.getMessage() + " from IKBody\n";
+            errorReport += "Stack trace:\n" + stackTrace + "\n";
         }
         return false;
     }

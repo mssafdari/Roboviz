@@ -14,7 +14,7 @@ public class forwardKinematics
         for (int i=0;i < thetaList.getRows();i++)
 		{
             se3algebra se3alg = new se3algebra(Matrix.scalarMulti(thetaList.get(i), Blist.get(i).matrix));
-            endEffectorT.matrix = endEffectorT.matrix.multiply(se3ops.matrixExp6(se3alg).se3g.matrix);
+            endEffectorT.matrix = endEffectorT.matrix.multiply(se3ops.matrixExp6(se3alg).matrix);
 		}
         return endEffectorT;
     }
@@ -24,7 +24,7 @@ public class forwardKinematics
         for (int i=0;i < thetaList.getRows();i++)
 		{
             se3algebra se3alg = new se3algebra(Matrix.scalarMulti(thetaList.get(i), Slist.get(i).matrix));
-            endEffectorT.matrix = endEffectorT.matrix.multiply((se3ops.matrixExp6(se3alg).se3g.matrix));
+            endEffectorT.matrix = endEffectorT.matrix.multiply((se3ops.matrixExp6(se3alg).matrix));
         }
         endEffectorT.matrix = endEffectorT.matrix.multiply(M.matrix);
         return endEffectorT;

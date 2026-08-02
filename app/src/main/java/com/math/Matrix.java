@@ -1,6 +1,7 @@
 package com.math;
 import java.util.Locale;
 import android.net.wifi.aware.PublishConfig;
+import org.apache.commons.math3.linear.*;
 
 public class Matrix
 {
@@ -328,26 +329,7 @@ public class Matrix
 		return new Matrix[]{Ut, S, V.transpose()};
 	}
 	
-	/*public Matrix pseudoInverse() {
-		// Compute SVD: A = U Σ Vᵀ
-		Matrix[] svd = this.svd();
-		Matrix U = svd[0];
-		Matrix S = svd[1];
-		Matrix Vt = svd[2];
-
-		// Compute Σ⁺ (pseudoinverse of Σ)
-		Matrix SPlus = new Matrix(Vt.getCols(), U.getCols());
-		for (int i = 0; i < S.getRows(); i++) {
-			if (S.get(i, i) > 1e-10) { // Avoid division by zero (tolerance for "zero" singular values)
-				SPlus.set(i, i, 1.0 / S.get(i, i));
-			}
-		}
-
-		// Pseudoinverse: A⁺ = V Σ⁺ Uᵀ
-		return Vt.transpose().multiply(SPlus).multiply(U.transpose());
-	}*/
-	
-	public Matrix pseudoInverse(){
+	/*public Matrix pseudoInverse(){
 		if(getRows()>=getCols()){
 			Matrix ATA=this.transpose().multiply(this);
 			return ATA.inverse().multiply(this.transpose());
@@ -357,7 +339,32 @@ public class Matrix
 			return this.transpose().multiply(AAT.inverse());
 		}
 		throw new IllegalStateException("something terrible happened in pseudo inverse");
-	}
+	}*/
+    
+    public RealMatrix toRealMatrix() {
+        return new Array2DRowRealMatrix(this.data, false);
+    }
+
+    public static Matrix fromRealMatrix(RealMatrix rm) {
+        int rows = rm.getRowDimension();
+        int cols = rm.getColumnDimension();
+        double[][] data = new double[rows][cols];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                data[i][j] = rm.getEntry(i, j);
+            }
+        }
+        return new Matrix(data);
+    }
+
+    // Replace your pseudoInverse with this robust version
+    public Matrix pseudoInverse() {
+        RealMatrix A = this.toRealMatrix();
+        SingularValueDecomposition svd = new SingularValueDecomposition(A);
+        RealMatrix pinv = svd.getSolver().getInverse();
+        return Matrix.fromRealMatrix(pinv);
+    }
+    
     public Matrix inverse()
 	{
 		if (!isSquare())

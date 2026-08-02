@@ -250,10 +250,10 @@ public class se3tests extends BaseTest
                 Matrix me = Matrix.scalarMulti(Math.PI/6,new Matrix( matrixExp));
                 Matrix res = msc.multiply(msb.inverse());
                 errorReport+="mInv="+res.toString()+"\n";
-            se3opslog se3g= se3ops.matrixExp6(new se3algebra(me));
-            errorReport +=se3g.log+"\n";
-            errorReport +="me6res="+se3g.se3g.matrix.toString()+"\n";
-                return se3g.se3g.matrix.isEqual(res);
+            se3group se3g= se3ops.matrixExp6(new se3algebra(me));
+            
+            errorReport +="me6res="+se3g.matrix.toString()+"\n";
+                return se3g.matrix.isEqual(res);
             
         }
         catch (Exception e)
@@ -291,10 +291,9 @@ public class se3tests extends BaseTest
             Matrix msc=new Matrix(Tsc);
             Matrix me = new Matrix(matrixExp);
             Matrix res = msc.multiply(msb.inverse());
-            se3opslog se3alg = se3ops.matrixLog6(new se3group(res));
-            errorReport +=se3alg.log;
-			errorReport="";//silencing
-            return se3alg.se3alg.matrix.isEqual(me);
+            se3algebra se3alg = se3ops.matrixLog6(new se3group(res));
+			//silencing
+            return se3alg.matrix.isEqual(me);
             
         }
         catch (Exception e)

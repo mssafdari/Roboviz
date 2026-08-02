@@ -68,14 +68,16 @@ public class MainActivity extends Activity
 						kinematicsTests kT=new kinematicsTests();
 						String msg = mT.run() + so3T.run() + se3T.run() + kT.run();
 						debug.setGravity(Gravity.CENTER);
-						debug.setText(msg);
+						appendLog(msg);
+                        updateLogDisplay();
 
 						Log.d(TAG, "Test result: " + msg);
 					}
 					catch (Exception e)
 					{
 						Log.e(TAG, "Error in test: " + e.getMessage());
-						debug.setText("Error: " + e.getMessage());
+						appendLog("Error: " + e.getMessage());
+                        updateLogDisplay();
 						e.printStackTrace();
 					}
 				}
@@ -204,4 +206,23 @@ public class MainActivity extends Activity
             debug.setText(e.getMessage());
         }
     }
+    
+    
+        // Public static log variable - accessible from anywhere
+        public static String debugLog = "";
+        public static final String EL = "\n";
+
+        // Optional: Method to clear or display the log
+        public static void clearLog() {
+            debugLog = "";
+        }
+
+        public static void appendLog(String text) {
+            debugLog += text + EL;
+        }
+
+        // In your UI, you can display it
+        private void updateLogDisplay() { 
+            debug.setText(debugLog);
+        }
 }

@@ -223,7 +223,7 @@ public class dynamics
 		ArrayList<se3group> Tlist=new ArrayList<se3group>();
 		for (int i=0;i < Slist.size();i++)
 		{
-			T = new se3group(se3ops.matrixExp6(new se3algebra(Matrix.scalarMulti(thetaList.get(i, 0), Slist.get(i).matrix))).se3g.matrix.multiply(T.matrix));
+			T = new se3group(se3ops.matrixExp6(new se3algebra(Matrix.scalarMulti(thetaList.get(i, 0), Slist.get(i).matrix))).matrix.multiply(T.matrix));
 			Tlist.add(T);
 		}
 		return Tlist;

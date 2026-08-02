@@ -26,7 +26,7 @@ public class jacobianBuilder
 		{
 			// J_bi = Ad(T) * B_i
 			Vector6 Bvec = se3algebra.se3ToVec(Blist.get(i));
-			Vector6 Jb_i = new Vector6(se3group.adjoint(T).adj.multiply(Bvec));
+			Vector6 Jb_i = new Vector6(se3group.adjoint(T).multiply(Bvec));
 			jacobianData.add(0, Jb_i);  // Add at beginning to maintain correct order
 
 			// Update T for the next joint (i-1)
@@ -50,7 +50,7 @@ public class jacobianBuilder
 	    ArrayList<Vector6> jacobianData = new ArrayList<Vector6>();
 		for (int i=0;i < thetaList.getRows();i++)
 		{
-			jacobianData.add(new Vector6(se3group.adjoint(se3g).adj.multiply(se3algebra.se3ToVec(Slist.get(i)))));
+			jacobianData.add(new Vector6(se3group.adjoint(se3g).multiply(se3algebra.se3ToVec(Slist.get(i)))));
 			se3g.matrix = se3g.matrix.multiply(se3ops.matrixExp6(new se3algebra(Matrix.scalarMulti(thetaList.get(i), Slist.get(i).matrix))).matrix);
 		}
 		return jacobianData;

@@ -25,7 +25,7 @@ public class se3algebra
 	public static se3algebra vecToSe3(Vector6 vec6)
 	{
 		se3algebra vecTo = new se3algebra(Matrix.identity(4));
-		Matrix.setSubMatrix(vecTo.matrix.data, 0,0,So3.vecToSo3(vec6.omega).data);
+		Matrix.setSubMatrix(vecTo.matrix.data, 0,0,so3algebra.vecToSo3(vec6.omega).matrix.data);
 		Matrix.setSubMatrix(vecTo.matrix.data,0,3,vec6.velocity.data);
 		Matrix.setSubMatrix(vecTo.matrix.data,3,0,Matrix.zeros(1,4).data);
 		return vecTo;

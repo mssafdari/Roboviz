@@ -15,7 +15,6 @@ import com.math.so3algebra;
 import com.math.axis3theta;
 import com.math.so3ops;
 import java.util.Locale;
-import com.math.so3opslog;  
 
 public class So3Test extends BaseTest
 {
@@ -149,7 +148,7 @@ public class So3Test extends BaseTest
                 {-0.433000887 ,0.058011059 ,0.899524846}
             };
             //errorReport+=so3alg.matrix.toString();
-            so3opslog so3g = so3ops.matrixExp3(so3alg);
+            so3group so3g = so3ops.matrixExp3(so3alg);
             /*for (int i = 0; i < 3; i++) {
                 for (int j = 0; j < 3; j++) {
                     errorReport+=  String.format(Locale.US,"%.9f ", so3g.matrix.get(i,j));
@@ -157,7 +156,7 @@ public class So3Test extends BaseTest
                 errorReport += "\n";
             }*/
             //errorReport+= so3g.log;
-            return so3g.so3g.matrix.isEqual(new Matrix(data));
+            return so3g.matrix.isEqual(new Matrix(data));
         } catch (Exception e) {
             errorReport +="\n"+ e.getMessage() + " from matrixexp3\n";
             e.printStackTrace();
@@ -169,15 +168,15 @@ public class So3Test extends BaseTest
 	{
         try
         {
-            so3algebra so3alg = so3algebra.vecToSo3(new Vector3(0.0, .866, .5));
-            so3alg.matrix=Matrix.scalarMulti(Math.PI/6,so3alg.matrix);
+            so3algebra truth = so3algebra.vecToSo3(new Vector3(0.0, .866, .5));
+            truth.matrix=Matrix.scalarMulti(Math.PI/6,truth.matrix);
             double[][] data = new double[][]{
                 {0.866031163, -0.250000512 ,0.433000887 },
                 {0.250000512, 0.966506317 ,0.058011059 },
                 {-0.433000887 ,0.058011059 ,0.899524846}};
-            so3opslog so3g = so3ops.matrixLog3((new so3group(new Matrix(data))));
+            so3algebra so3alg = so3ops.matrixLog3((new so3group(new Matrix(data))));
             //errorReport+= so3g.log;
-            return so3alg.matrix.isEqual(so3g.so3alg.matrix);
+            return so3alg.matrix.isEqual(truth.matrix);
         }
         catch (Exception e)
         {

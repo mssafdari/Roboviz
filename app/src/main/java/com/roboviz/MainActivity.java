@@ -30,6 +30,7 @@ public class MainActivity extends Activity
 {
 
     private TextView debug;
+    public static boolean doLog=true;
 
     private static final String TAG= "activity";
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
@@ -218,7 +219,9 @@ public class MainActivity extends Activity
         }
 
         public static void appendLog(String text) {
-            debugLog += text + EL;
+            if(doLog){
+                debugLog += text + EL;
+            }
         }
 
         // In your UI, you can display it

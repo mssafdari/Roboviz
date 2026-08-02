@@ -132,7 +132,7 @@ public class Robot
 			log+="slist("+i+")="+Slist.get(i).matrix.toString()+nl;
             Svec = se3algebra.se3ToVec(Slist.get(i));
 			log+="Slist("+i+")="+Svec.toString()+nl;
-            Bvec=new Vector6( se3group.adjoint(se3group.transInverse(M)).adj.multiply(Svec));
+            Bvec=new Vector6( se3group.adjoint(se3group.transInverse(M)).multiply(Svec));
             Blist.add(se3algebra.vecToSe3(Bvec));
 			log+="Blist("+i+")="+Blist.get(i)+nl;
         }

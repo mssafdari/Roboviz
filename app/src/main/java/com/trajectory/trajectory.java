@@ -8,6 +8,7 @@ import com.math.so3group;
 import com.math.Vector3;
 import com.math.so3ops;
 import com.math.se3algebra;
+import com.math.so3algebra;
 
 public class trajectory
 {
@@ -60,23 +61,25 @@ public class trajectory
 	{
 		double dt=Tf / (N - 1);
 		ArrayList<se3group> Jtrajectory=new ArrayList<se3group>();
-		se3algebra temp;
+		se3algebra tempSe3alg;
+        se3group tempSe3g;
 		se3group XstartInv=new se3group(Xstart.matrix.inverse());
 		if (method == timeScalingMethod.CUBIC)
 			for (int i=0;i < N;i++)
 			{
-				temp= se3ops.matrixLog6(new se3group(XstartInv.matrix.multiply(Xend.matrix)));
-				temp =new se3algebra(Xstart.matrix.multiply(Matrix.scalarMulti(cubicTimeScaling(Tf,i*dt),temp.matrix)));
-				Jtrajectory.add(temp);
+				tempSe3alg = se3ops.matrixLog6(new se3group(XstartInv.matrix.multiply(Xend.matrix)));
+				tempSe3g = new se3group(Xstart.matrix.multiply(Matrix.scalarMulti(cubicTimeScaling(Tf, i * dt), tempSe3alg.matrix)));
+				Jtrajectory.add(tempSe3g);
 			}
-			else{
-				for (int i=0;i < N;i++)
-				{
-					temp= se3ops.matrixLog6(new se3group(XstartInv.matrix.multiply(Xend.matrix)));
-					temp =new se3algebra(Xstart.matrix.multiply(Matrix.scalarMulti(quinticTimeScaling(Tf,i*dt),temp.matrix)));
-					Jtrajectory.add(temp);
-				}
-			}
+        else
+        {
+            for (int i=0;i < N;i++)
+            {
+                tempSe3alg = se3ops.matrixLog6(new se3group(XstartInv.matrix.multiply(Xend.matrix)));
+                tempSe3g = new se3group(Xstart.matrix.multiply(Matrix.scalarMulti(quinticTimeScaling(Tf, i * dt), tempSe3alg.matrix)));
+                Jtrajectory.add(tempSe3g);
+            }
+        }
 		return Jtrajectory;
 	}
 
@@ -90,25 +93,28 @@ public class trajectory
 		so3group rotEnd= se3group.transToRp(Xend).rot;
 		Vector3 posEnd= se3group.transToRp(Xend).pos;
 		so3group tempRot= new so3group(Matrix.identity(3));
+        so3algebra tempScr=new so3algebra(Matrix.zeros(3,3));
 		Vector3 tempPos=new Vector3();
 		se3group temp= new se3group(Matrix.identity(4));
-		if(method==timeScalingMethod.CUBIC){
+		if (method == timeScalingMethod.CUBIC)
+        {
 			for (int i=0;i < N;i++)
 			{
-				tempRot= so3ops.matrixLog3(new so3group(rotStart.matrix.transpose().multiply(rotEnd.matrix))).so3g;
-				tempRot =new so3group(rotStart.matrix.multiply(Matrix.scalarMulti(cubicTimeScaling(Tf,i*dt),tempRot.matrix)));
-				tempPos =new Vector3(posStart.add(Vector.scalarMulti(cubicTimeScaling(Tf, i * dt), (posEnd.subtract(posStart)))));
-				temp=se3group.RpToTrans(tempRot,tempPos);
+				tempScr = so3ops.matrixLog3(new so3group(rotStart.matrix.transpose().multiply(rotEnd.matrix)));
+				tempRot = new so3group(rotStart.matrix.multiply(Matrix.scalarMulti(cubicTimeScaling(Tf, i * dt), tempScr.matrix)));
+				tempPos = new Vector3(posStart.add(Vector.scalarMulti(cubicTimeScaling(Tf, i * dt), (posEnd.subtract(posStart)))));
+				temp = se3group.RpToTrans(tempRot, tempPos);
 				Jtrajectory.add(temp);
 			}
 		}
-		else{
+		else
+        {
 			for (int i=0;i < N;i++)
 			{
-				tempRot= so3ops.matrixLog3(new so3group(rotStart.matrix.transpose().multiply(rotEnd.matrix))).so3g;
-				tempRot =new so3group(rotStart.matrix.multiply(Matrix.scalarMulti(quinticTimeScaling(Tf,i*dt),tempRot.matrix)));
-				tempPos =new Vector3(posStart.add(Vector.scalarMulti(cubicTimeScaling(Tf, i * dt), (posEnd.subtract(posStart)))));
-				temp=se3group.RpToTrans(tempRot,tempPos);
+				tempScr = so3ops.matrixLog3(new so3group(rotStart.matrix.transpose().multiply(rotEnd.matrix)));
+				tempRot = new so3group(rotStart.matrix.multiply(Matrix.scalarMulti(quinticTimeScaling(Tf, i * dt), tempScr.matrix)));
+				tempPos = new Vector3(posStart.add(Vector.scalarMulti(cubicTimeScaling(Tf, i * dt), (posEnd.subtract(posStart)))));
+				temp = se3group.RpToTrans(tempRot, tempPos);
 				Jtrajectory.add(temp);
 			}
 		}

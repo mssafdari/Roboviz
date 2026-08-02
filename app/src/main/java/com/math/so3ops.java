@@ -1,13 +1,15 @@
 package com.math;
+import com.roboviz.MainActivity;
 
 public class so3ops
 {
-	public static so3opslog matrixExp3(so3algebra so3alg)
+    private static String log;
+	public static so3group matrixExp3(so3algebra so3alg)
     {
-        so3opslog res = new so3opslog();
+        so3group so3g;
         try
         {
-            res.log += so3alg.matrix.toString() + "\n";
+            MainActivity.appendLog( so3alg.matrix.toString() + "\n");
             if (so3algebra.isSkewSymmetric(so3alg.matrix) || true)
             {
                 Vector3 omg =so3algebra.so3ToVec(so3alg);
@@ -15,9 +17,9 @@ public class so3ops
 
                 if (Math.abs(theta) < 1e-10)
                 {
-                    res.so3g = new so3group(Matrix.identity(3));
-                    res.log += Matrix.identity(3).toString();
-                    return res;
+                    so3g = new so3group(Matrix.identity(3));
+                    MainActivity.appendLog( Matrix.identity(3).toString());
+                    return so3g;
                 }
 
                 Vector3 unitOmg = omg.normalize();
@@ -26,29 +28,30 @@ public class so3ops
                 Matrix identity = Matrix.identity(3);
                 Matrix term1 = Matrix.scalarMulti(Math.sin(theta), omega.matrix);
                 Matrix term2 = Matrix.scalarMulti(1.0 - Math.cos(theta), omega.matrix.multiply(omega.matrix));
-                res.so3g = new so3group(identity.add(term1).add(term2));
-                res.log+= "theta="+ theta+"\n";
-                res.log+= "omega-hat="+omega.matrix.toString()+"\n";
-                res.log += "I=" + identity.toString() + "\n";
-                res.log += "sin(theta)[omega]=" + term1.toString() + "\n";
-                res.log += "1-cos(theta)[omega]^2=" + term2.toString() + "\n";
-                res.log += "result="+identity.add(term1).add(term2)+"\n";
-                return res;
+                so3g = new so3group(identity.add(term1).add(term2));
+                log+= "theta="+ theta+"\n";
+                log+= "omega-hat="+omega.matrix.toString()+"\n";
+                log += "I=" + identity.toString() + "\n";
+                log += "sin(theta)[omega]=" + term1.toString() + "\n";
+                log += "1-cos(theta)[omega]^2=" + term2.toString() + "\n";
+                log += "result="+identity.add(term1).add(term2)+"\n";
+                MainActivity.appendLog(log);
+                return so3g;
             }
         }
         catch (Exception e)
         {
-            return res;
+            throw new IllegalStateException("error at matrixexp3");
         }
 
 		throw new IllegalArgumentException("Input is not a valid skew symmetric matrix.");
 	}
-	public static so3opslog matrixLog3(so3group R)
+	public static so3algebra matrixLog3(so3group R)
     {
-        so3opslog res = new so3opslog();
+        so3algebra so3alg;
         try
         {
-            so3algebra so3alg = new so3algebra(Matrix.identity(3));
+            so3alg = new so3algebra(Matrix.identity(3));
             axis3theta at = new axis3theta();
             Matrix temp = Matrix.zeros(3,3);
             Vector3 Vec= new Vector3();
@@ -57,8 +60,7 @@ public class so3ops
             {
                 if (R.matrix.isEqual(Matrix.identity(3)))
                 {
-                    res.so3alg = so3alg;
-                    return res;
+                    return so3alg;
                 }
                 else if (R.matrix.trace() == -1)
                 {
@@ -76,26 +78,28 @@ public class so3ops
                         temp = Matrix.scalarMulti(1 / Math.sqrt(2 * (1 + R.matrix.data[0][0])), new Vector3(1 + R.matrix.data[0][0], R.matrix.data[1][0], R.matrix.data[2][0]));
                     }
                     Vec = new Vector3(temp.data[0][0], temp.data[1][0], temp.data[2][0]);
-                    res.so3alg = so3algebra.vecToSo3(Vec);
-                    res.log += "vec=" + Vec.toString()+"\n";;
-                    res.log += "so3alg=" + so3alg.matrix.toString() + "\n";
-                    return res;
+                    so3alg = so3algebra.vecToSo3(Vec);
+                    log += "vec=" + Vec.toString()+"\n";;
+                    log += "so3alg=" + so3alg.matrix.toString() + "\n";
+                    MainActivity.appendLog(log);
+                    return so3alg;
                 }
                 else
                 {
                     at.theta = Math.acos(.5 * (R.matrix.trace() - 1));
                     Matrix omega = Matrix.scalarMulti(.5 * at.theta / Math.sin(at.theta), R.matrix.subtract(R.matrix.transpose()));
                     Vec = so3algebra.so3ToVec(new so3algebra(omega));
-                    res.so3alg = so3algebra.vecToSo3(Vec);  
-                    res.log += "vec=" + Vec.toString()+"\n";
-                    res.log += "so3alg=" + so3alg.matrix.toString() + "\n";
-                    return res;
+                    so3alg = so3algebra.vecToSo3(Vec);  
+                    log += "vec=" + Vec.toString()+"\n";
+                    log += "so3alg=" + so3alg.matrix.toString() + "\n";
+                    MainActivity.appendLog(log);
+                    return so3alg;
                 }
             }
         }
         catch (Exception e)
         {
-            return res;
+            throw new IllegalStateException("error in matrix log3");
         }
 		throw new IllegalArgumentException("oops.");
 	}

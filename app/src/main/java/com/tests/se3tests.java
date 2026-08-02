@@ -15,10 +15,8 @@ import com.math.so3algebra;
 import com.math.axis3theta;
 import com.math.so3ops;
 import java.util.Locale;
-import com.math.so3opslog;
 import com.math.se3group;
 import com.math.rotPos;
-import com.math.se3opslog;
 import com.math.Vector6;
 import com.math.se3algebra;
 import com.math.se3ops;  
@@ -100,7 +98,7 @@ public class se3tests extends BaseTest
                     0,0,1,3},{
                     0,0,0,1}};
             se3group se3g = new se3group(new Matrix(transform));
-            se3opslog adj=se3group.adjoint(se3g);
+            Matrix adj=se3group.adjoint(se3g);
             double[][] desired = new double[][]
             {{1,0,0,0,0,0},{
                     0,1,0,0,0,0},{
@@ -108,8 +106,7 @@ public class se3tests extends BaseTest
                     0,-3,2,1,0,0},{
                     3,0,-1,0,1,0},{
                     -2,1,0,0,0,1}};
-            errorReport += adj.log;
-            return adj.adj.isEqual(new Matrix(desired));
+            return adj.isEqual(new Matrix(desired));
 
         }
         catch (Exception e)

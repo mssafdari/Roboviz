@@ -4,15 +4,14 @@ import com.math.se3group;
 import com.math.Matrix;
 import com.math.Vector;
 import com.math.se3algebra;
-import android.renderscript.Matrix2f;
 import java.util.ArrayList;
-import com.kinematics.IKresult;
 import com.kinematics.inversekinematics;
 import com.kinematics.jacobianBuilder;
 import com.math.Vector6;
 import com.math.Vector3;
 import java.io.StringWriter;
 import java.io.PrintWriter;
+import com.roboviz.MainActivity;
 
 public class kinematicsTests extends BaseTest
 {
@@ -136,9 +135,9 @@ public class kinematicsTests extends BaseTest
 			ArrayList<se3algebra> Blist=new ArrayList<se3algebra>();
 			se3group M=new se3group(new Matrix(m));
 			se3group Minv=new se3group(M.matrix.inverse());
-			Blist.add(new se3algebra(new Vector6(se3group.adjoint(Minv).adj.multiply(se3algebra.se3ToVec(se1)))));
-			Blist.add(new se3algebra(new Vector6(se3group.adjoint(Minv).adj.multiply(se3algebra.se3ToVec(se2)))));
-			Blist.add(new se3algebra(new Vector6(se3group.adjoint(Minv).adj.multiply(se3algebra.se3ToVec(se3)))));
+			Blist.add(new se3algebra(new Vector6(se3group.adjoint(Minv).multiply(se3algebra.se3ToVec(se1)))));
+			Blist.add(new se3algebra(new Vector6(se3group.adjoint(Minv).multiply(se3algebra.se3ToVec(se2)))));
+			Blist.add(new se3algebra(new Vector6(se3group.adjoint(Minv).multiply(se3algebra.se3ToVec(se3)))));
 			double[][] thetaL=new double[][]{{0},{0},{Math.PI / 2}};
 			Vector thetaList=new Vector(thetaL);
 			errorReport+="before fk\n";
@@ -185,14 +184,16 @@ public class kinematicsTests extends BaseTest
     {
         try
         {
+            MainActivity.clearLog();
+            MainActivity.doLog=true;
 			initFK_IK();
 
 			ArrayList<se3algebra> Blist=new ArrayList<se3algebra>();
 			se3group M=new se3group(new Matrix(m));
 			se3group Minv=new se3group(M.matrix.inverse());
-			Blist.add(new se3algebra(new Vector6(se3group.adjoint(Minv).adj.multiply(se3algebra.se3ToVec(se1)))));
-			Blist.add(new se3algebra(new Vector6(se3group.adjoint(Minv).adj.multiply(se3algebra.se3ToVec(se2)))));
-			Blist.add(new se3algebra(new Vector6(se3group.adjoint(Minv).adj.multiply(se3algebra.se3ToVec(se3)))));
+			Blist.add(new se3algebra(new Vector6(se3group.adjoint(Minv).multiply(se3algebra.se3ToVec(se1)))));
+			Blist.add(new se3algebra(new Vector6(se3group.adjoint(Minv).multiply(se3algebra.se3ToVec(se2)))));
+			Blist.add(new se3algebra(new Vector6(se3group.adjoint(Minv).multiply(se3algebra.se3ToVec(se3)))));
             for(int i=0;i<Blist.size();i++){
              errorReport+="b("+i+")"+Blist.get(i).matrix.toString()+el;
              }
@@ -200,11 +201,11 @@ public class kinematicsTests extends BaseTest
 			Vector thetaList=new Vector(thetaL);
             se3group ee= forwardKinematics.FKinBody(M, Blist, thetaList);
 			errorReport+="before ik body"+el+ee.matrix.toString()+el;
-			IKresult thetaListInv=inversekinematics.IKinBody(Blist,M,ee,new Vector(new double[][]{{.1},{.1},{.1}}));
+			Vector thetaListInv=inversekinematics.IKinBody(Blist,M,ee,new Vector(new double[][]{{.1},{.1},{.1}}));
 			//errorReport+=thetaListInv.thetaList.toString()+el+thetaListInv.success+el;
-			errorReport+=thetaListInv.log;
-			errorReport+="fk_ik="+el+forwardKinematics.FKinBody(M,Blist,thetaListInv.thetaList).matrix.toString()+el;
-			return thetaListInv.thetaList.isEqual(thetaList);
+			errorReport+="fk_ik="+el+forwardKinematics.FKinBody(M,Blist,thetaListInv).matrix.toString()+el;
+            MainActivity.doLog=false;
+			return thetaListInv.isEqual(thetaList);
         }
         catch (Exception e)
         {
@@ -216,6 +217,7 @@ public class kinematicsTests extends BaseTest
             errorReport += "Exception: " + e.getMessage() + " from IKBody\n";
             errorReport += "Stack trace:\n" + stackTrace + "\n";
         }
+        MainActivity.doLog=false;
         return false;
     }
 	
@@ -233,11 +235,10 @@ public class kinematicsTests extends BaseTest
 			Vector thetaList=new Vector(thetaL);
             se3group ee= forwardKinematics.FKinSpace(M, Slist, thetaList);
 			errorReport+="before ik space"+el+ee.matrix.toString()+el;
-            IKresult thetaListInv=inversekinematics.IKinSpace(Slist,M,ee,new Vector(new double[][]{{.1},{.1},{.1}}));
-			errorReport+=thetaListInv.thetaList.toString()+el+thetaListInv.success+el;
-			errorReport+=thetaListInv.log;
-			errorReport+="fk_ik="+el+forwardKinematics.FKinBody(M,Slist,thetaListInv.thetaList).matrix.toString()+el;
-			return thetaListInv.thetaList.isEqual(thetaList);
+            Vector thetaListInv=inversekinematics.IKinSpace(Slist,M,ee,new Vector(new double[][]{{.1},{.1},{.1}}));
+			errorReport+=thetaListInv.toString()+el;
+			errorReport+="fk_ik="+el+forwardKinematics.FKinBody(M,Slist,thetaListInv).matrix.toString()+el;
+			return thetaListInv.isEqual(thetaList);
         }
         catch (Exception e)
         {
@@ -258,16 +259,16 @@ public class kinematicsTests extends BaseTest
 			//errorReport+="T="+el+T.matrix.toString()+el;
 			se3group Tinv=new se3group(T.matrix.inverse());
 			se3group Minv=new se3group(M.matrix.inverse());
-			Blist.add(new se3algebra(new Vector6(se3group.adjoint(Minv).adj.multiply(se3algebra.se3ToVec(S_list.get(0))))));
-			Blist.add(new se3algebra(new Vector6(se3group.adjoint(Minv).adj.multiply(se3algebra.se3ToVec(S_list.get(1))))));
-			Blist.add(new se3algebra(new Vector6(se3group.adjoint(Minv).adj.multiply(se3algebra.se3ToVec(S_list.get(2))))));
-			Blist.add(new se3algebra(new Vector6(se3group.adjoint(Minv).adj.multiply(se3algebra.se3ToVec(S_list.get(3))))));
+			Blist.add(new se3algebra(new Vector6(se3group.adjoint(Minv).multiply(se3algebra.se3ToVec(S_list.get(0))))));
+			Blist.add(new se3algebra(new Vector6(se3group.adjoint(Minv).multiply(se3algebra.se3ToVec(S_list.get(1))))));
+			Blist.add(new se3algebra(new Vector6(se3group.adjoint(Minv).multiply(se3algebra.se3ToVec(S_list.get(2))))));
+			Blist.add(new se3algebra(new Vector6(se3group.adjoint(Minv).multiply(se3algebra.se3ToVec(S_list.get(3))))));
 			/*for(int i=0;i<Blist.size();i++){
 				errorReport+="b("+i+")"+Blist.get(i).matrix.toString()+el;
 			}*/
 			
 			ArrayList<Vector6> jacBody= jacobianBuilder.JacobianBody(Blist,new Vector(thetaL));
-			Matrix jacB=se3group.adjoint(Tinv).adj.multiply(jacS);
+			Matrix jacB=se3group.adjoint(Tinv).multiply(jacS);
 			//errorReport+="jacBody="+el+inversekinematics.ArrayListToMatrix(jacBody).toString()+el+"jacB"+el+jacB.toString()+el;
 			
 			return inversekinematics.ArrayListToMatrix(jacBody).isEqual(jacB);

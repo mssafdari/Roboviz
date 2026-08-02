@@ -24,7 +24,7 @@ public class se3ops
 				if (omg.norm() == 1)
 				{
                     
-					so3opslog o = so3ops.matrixExp3(new so3algebra(Matrix.scalarMulti(at.theta, omeg.matrix)));
+					so3group o = so3ops.matrixExp3(new so3algebra(Matrix.scalarMulti(at.theta, omeg.matrix)));
 					Matrix part1 = Matrix.scalarMulti(at.theta, Matrix.identity(3));
 					Matrix part2 = Matrix.scalarMulti(1.0 - Math.cos(at.theta), omeg.matrix);
 					Matrix part3 = Matrix.scalarMulti(at.theta - Math.sin(at.theta), omeg.matrix.multiply(omeg.matrix));
@@ -34,7 +34,7 @@ public class se3ops
                     double[][] t2=new double[][]{{7},{4},{1}};
                     double[][] t3=new double[][]{{1,2,4}};
                     double[][] t4=new double[][]{{1}};
-                    Matrix se3gmat = Matrix.blockToMatrix(new Matrix[][]{{o.so3g.matrix,result},{Matrix.zeros(1, 3),Matrix.identity(1)}});
+                    Matrix se3gmat = Matrix.blockToMatrix(new Matrix[][]{{o.matrix,result},{Matrix.zeros(1, 3),Matrix.identity(1)}});
 					Matrix test = Matrix.blockToMatrix(new Matrix[][]{{new Matrix(t1),new Matrix(t2)},{new Matrix(t3),new Matrix(t4)}});
 					
                     se3g= new se3group(se3gmat);
@@ -98,15 +98,15 @@ public class se3ops
 			else
 			{
                 MainActivity.appendLog("+++++");
-				so3opslog so3alg = so3ops.matrixLog3((new so3group(se3gr.matrix.getSubMatrix(0, 0, 3, 3))));
-				axis3theta a3t = Vector3.axisAng3(so3algebra.so3ToVec(so3alg.so3alg));
+				so3algebra so3alg = so3ops.matrixLog3((new so3group(se3gr.matrix.getSubMatrix(0, 0, 3, 3))));
+				axis3theta a3t = Vector3.axisAng3(so3algebra.so3ToVec(so3alg));
                 MainActivity.appendLog("theta"+a3t.theta+"\n");
 				Matrix part1 =Matrix.scalarMulti(1.0 / a3t.theta, Matrix.identity(3));
 				Matrix ssOmg =so3algebra.vecToSo3(a3t.axis).matrix;
 				Matrix part2 = Matrix.scalarMulti(-.5, ssOmg);
 				Matrix part3 =Matrix.scalarMulti(1.0 / a3t.theta - 1.0 / (2.0 * Math.tan(a3t.theta / 2.0)), ssOmg.multiply(ssOmg));
 				Matrix result = part1.add(part2).add(part3).multiply(se3gr.matrix.getSubMatrix(0, 3, 3, 1));
-                Matrix se3algmat = Matrix.blockToMatrix(new Matrix[][]{{Matrix.scalarMulti(1.0/a3t.theta,so3alg.so3alg.matrix),result},{Matrix.zeros(1, 3),Matrix.zeros(1,1)}});
+                Matrix se3algmat = Matrix.blockToMatrix(new Matrix[][]{{Matrix.scalarMulti(1.0/a3t.theta,so3alg.matrix),result},{Matrix.zeros(1, 3),Matrix.zeros(1,1)}});
              
 				se3alg =new se3algebra(se3algmat);
             

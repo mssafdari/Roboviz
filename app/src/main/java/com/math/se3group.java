@@ -1,9 +1,11 @@
 package com.math;
+import com.roboviz.MainActivity;
 
 
 public class se3group
 {
 	public Matrix matrix;
+    private static String log;
 	public se3group(Matrix mat){
 		matrix=mat;
 	}
@@ -19,25 +21,25 @@ public class se3group
 		return false;
 	}
 	
-	public static se3opslog adjoint(se3group T){
+	public static Matrix adjoint(se3group T){
 		rotPos Rp = transToRp(T);
-        se3opslog adjoi =new se3opslog();
-        adjoi.log +="T=\n"+T.matrix.toString();
-        adjoi.log +="Rp.R=\n"+Rp.rot.matrix.toString();
+        se3group adjoi =new se3group(Matrix.identity(4));
+        log +="T=\n"+T.matrix.toString();
+        log +="Rp.R=\n"+Rp.rot.matrix.toString();
         
         Vector3 vec = new Vector3(T.matrix.data[0][3],T.matrix.data[1][3],T.matrix.data[2][3]);
 		so3algebra so3p = so3algebra.vecToSo3(vec);
-        adjoi.log +="vec=\n"+vec.toString();
-        adjoi.log +="Rp.p=\n"+Rp.pos.toString();
-        adjoi.log +="[p]=\n"+so3p.matrix.toString();
+        log +="vec=\n"+vec.toString();
+        log +="Rp.p=\n"+Rp.pos.toString();
+        log +="[p]=\n"+so3p.matrix.toString();
 		so3algebra adj11 = new so3algebra(so3p.matrix.multiply(Rp.rot.matrix));
 		Matrix adj = Matrix.blockToMatrix(new Matrix[][]{
                                               {Rp.rot.matrix, Matrix.zeros(3, 3)},
                                               {adj11.matrix, Rp.rot.matrix}
                                           });
-        adjoi.adj=adj;
-        adjoi.log +="adh=\n"+adj.toString();
-		return adjoi;
+        log +="adh=\n"+adj.toString();
+        MainActivity.appendLog(log);
+		return adj;
 	}
 	
 	public static rotPos transToRp(se3group se3)
@@ -51,7 +53,7 @@ public class se3group
 			}
 			Rp.pos.data[i][0] = se3.matrix.data[i][3];
 		}
-		if(!So3.isRotation(Rp.rot.matrix)){
+		if(!so3group.isRotation(Rp.rot.matrix)){
 			throw new IllegalArgumentException("Input is not a valid se3group matrix.");
 		}
 		return Rp;

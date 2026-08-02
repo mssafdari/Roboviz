@@ -163,7 +163,7 @@ public class dynamics
 		{
 			temp = Mlist.get(i).matrix.inverse();
 			Svec = se3algebra.se3ToVec(Slist.get(i));
-			Alist.add(new se3algebra(se3group.adjoint(new se3group(temp)).adj.multiply(Svec)));
+			Alist.add(new se3algebra(se3group.adjoint(new se3group(temp)).multiply(Svec)));
 		}
 		return Alist;
 	}
@@ -268,7 +268,7 @@ public class dynamics
 			Matrix.setSubMatrix(LTheta, i * 6, i * 6, Matrix.identity(6).getData());
 			for (int j=0;j < i;j++)
 			{
-				adj = se3group.adjoint(Tlist.get(i)).adj;
+				adj = se3group.adjoint(Tlist.get(i));
 				Matrix.setSubMatrix(LTheta, i * 6, j * 6, adj.getData());
 			}
 		}
@@ -295,7 +295,7 @@ public class dynamics
 		ArrayList<se3algebra> Blist=new ArrayList<se3algebra>();
 		for (int i=0;i < model.Slist.size();i++)
 		{
-			Blist.add(new se3algebra(se3group.adjoint(Tsb).adj.multiply(model.Slist.get(i).matrix)));
+			Blist.add(new se3algebra(se3group.adjoint(Tsb).multiply(model.Slist.get(i).matrix)));
 		}
 		ArrayList<Vector6> JacBody=jacobianBuilder.JacobianBody(Blist, thetaList);
 		ArrayList<Vector> Jbi=new ArrayList<Vector>();

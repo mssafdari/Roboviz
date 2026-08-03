@@ -25,12 +25,14 @@ import java.util.Arrays;
 import com.tests.kinematicsTests;
 import java.util.List;
 import android.content.Intent;
+import android.widget.ToggleButton;
 
 public class MainActivity extends Activity
 {
 
     private TextView debug;
     public static boolean doLog=true;
+    private Boolean Tso3=false,Tse3=false,Tkinematics=false;
 
     private static final String TAG= "activity";
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
@@ -38,7 +40,7 @@ public class MainActivity extends Activity
         Manifest.permission.READ_EXTERNAL_STORAGE,
         Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
-
+    ToggleButton t1,t2,t3;
     @Override
     protected void onCreate(Bundle savedInstanceState)
 	{
@@ -48,6 +50,10 @@ public class MainActivity extends Activity
         debug = findViewById(R.id.myText);
 		debug.setTextIsSelectable(true);
         Button myButton = findViewById(R.id.testButton);
+        t1=findViewById(R.id.toggleSo3t);
+        t2=findViewById(R.id.toggleSe3t);
+        t3=findViewById(R.id.toggleKinematicst);
+
 		Button goToRobotButton = findViewById(R.id.goToRobotButton);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
@@ -57,19 +63,64 @@ public class MainActivity extends Activity
                 requestPermissions(PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
             }
         }
+
+        t1.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v)
+                {
+                    if (t1.isChecked())
+                    {
+                        Tso3=true;
+                    }
+                    else
+                    {
+                        Tso3=false;
+                    }
+                }
+                });
+        t2.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v)
+                {
+                    if (t2.isChecked())
+                    {
+                        Tse3=true;
+                    }
+                    else
+                    {
+                        Tse3=false;
+                    }
+                }
+            });
+        t3.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v)
+                {
+                    if (t3.isChecked())
+                    {
+                        Tkinematics=true;
+                    }
+                    else
+                    {
+                        Tkinematics=false;
+                    }
+                }
+            });
+
         myButton.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v)
 				{
+                    clearLog();
 					try
 					{
 						matrixTests mT = new matrixTests();
 						So3Test so3T = new So3Test();
 						se3tests se3T = new se3tests();
 						kinematicsTests kT=new kinematicsTests();
-						String msg = mT.run() + so3T.run() + se3T.run() + kT.run();
+						String msg = mT.run(false) + so3T.run(Tso3) + se3T.run(Tse3) + kT.run(Tkinematics);
 						debug.setGravity(Gravity.CENTER);
-						appendLog(msg,true);
+						appendLog(msg, true);
                         updateLogDisplay();
 
 						Log.d(TAG, "Test result: " + msg);
@@ -77,7 +128,7 @@ public class MainActivity extends Activity
 					catch (Exception e)
 					{
 						Log.e(TAG, "Error in test: " + e.getMessage());
-						appendLog("Error: " + e.getMessage(),true);
+						appendLog("Error: " + e.getMessage(), true);
                         updateLogDisplay();
 						e.printStackTrace();
 					}
@@ -207,32 +258,38 @@ public class MainActivity extends Activity
             debug.setText(e.getMessage());
         }
     }
-    
-    
-        // Public static log variable - accessible from anywhere
-        public static String debugLog = "";
-        public static final String EL = "\n";
 
-        // Optional: Method to clear or display the log
-        public static void clearLog() {
-            debugLog = "";
-        }
 
-        public static void appendLog(String text,Boolean verbose) {
-            if(doLog && verbose){
-                debugLog += text + EL;
-            }
-        }
+    // Public static log variable - accessible from anywhere
+    public static String debugLog = "";
+    public static final String EL = "\n";
 
-        public static void appendTitle(String text,Boolean verbose) {
-            if(doLog && verbose){
-                debugLog += text + EL;
-                debugLog +="______________________________________\n";
-            }
+    // Optional: Method to clear or display the log
+    public static void clearLog()
+    {
+        debugLog = "";
+    }
+
+    public static void appendLog(String text, Boolean verbose)
+    {
+        if (doLog && verbose)
+        {
+            debugLog += text + EL;
         }
-        
-        // In your UI, you can display it
-        private void updateLogDisplay() { 
-            debug.setText(debugLog);
+    }
+
+    public static void appendTitle(String text, Boolean verbose)
+    {
+        if (doLog && verbose)
+        {
+            debugLog += text + EL;
+            debugLog += "______________________________________\n";
         }
+    }
+
+    // In your UI, you can display it
+    private void updateLogDisplay()
+    { 
+        debug.setText(debugLog);
+    }
 }

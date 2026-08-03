@@ -19,7 +19,8 @@ import com.math.se3group;
 import com.math.rotPos;
 import com.math.Vector6;
 import com.math.se3algebra;
-import com.math.se3ops;  
+import com.math.se3ops;
+import com.roboviz.MainActivity;  
 
 public class se3tests extends BaseTest
 {
@@ -43,13 +44,15 @@ public class se3tests extends BaseTest
             "testSe3ToVec",
             "testvecToSe3",
             "testMatrixExp6",
-            "testMatrixLog6"
+            "testMatrixLog6",
+            "testMatrixExpLog6"
         };
     }
 
     @Override
     protected boolean[] runTests()
     {
+        MainActivity.appendTitle("\n***Running se3 tests***\n", true);
         return new boolean[]{
             testIsTransformation(),
             testAdjoint(),
@@ -59,7 +62,8 @@ public class se3tests extends BaseTest
             testSe3ToVec(),
             testvecToSe3(),
             testMatrixExp6(),
-            testMatrixLog6()
+            testMatrixLog6(),
+            testMatrixExpLog6()
         };
     }
 
@@ -158,7 +162,7 @@ public class se3tests extends BaseTest
         }
         return false;
     }
-    
+
     private boolean testRpToTrans()
     {
         try
@@ -188,8 +192,8 @@ public class se3tests extends BaseTest
             {{0,-3,2 ,0},{
                     3,0,-1,1},{
                     -2,1,0,0},
-                    {0,0,0,0}};
-            Vector6 vecse3= new Vector6(new Vector3(1,2,3),new Vector3(0,1,0));
+                {0,0,0,0}};
+            Vector6 vecse3= new Vector6(new Vector3(1, 2, 3), new Vector3(0, 1, 0));
             return se3algebra.se3ToVec(new se3algebra(new Matrix(transform))).isEqual(vecse3);
         }
         catch (Exception e)
@@ -199,8 +203,8 @@ public class se3tests extends BaseTest
         }
         return false;
     }
-    
-    
+
+
     private boolean testvecToSe3()
     {
         try
@@ -210,9 +214,9 @@ public class se3tests extends BaseTest
                     3,0,-1,1},{
                     -2,1,0,0},
                 {0,0,0,0}};
-            Vector6 vecse3= new Vector6(new Vector3(1,2,3),new Vector3(0,1,0));
+            Vector6 vecse3= new Vector6(new Vector3(1, 2, 3), new Vector3(0, 1, 0));
             return se3algebra.vecToSe3(vecse3).matrix.isEqual(new Matrix(transform));
-        
+
         }
         catch (Exception e)
         {
@@ -221,37 +225,37 @@ public class se3tests extends BaseTest
         }
         return false;
     }
-    
+
     private boolean testMatrixExp6()
     {
         try
         {
             double pi = Math.PI;
             double[][] Tsb = new double[][]
-            {{Math.cos(pi/6),-1.0*Math.sin(pi/6),0,1},{
-              Math.sin(pi/6),Math.cos(pi/6),0,2},{
-              0,0,1,0},
+            {{Math.cos(pi / 6),-1.0 * Math.sin(pi / 6),0,1},{
+                    Math.sin(pi / 6),Math.cos(pi / 6),0,2},{
+                    0,0,1,0},
                 {0,0,0,1}};
             double[][] Tsc = new double[][]
-            {{Math.cos(pi/3),-1.0*Math.sin(pi/3),0,2},{
-                    Math.sin(pi/3),Math.cos(pi/3),0,1},{
+            {{Math.cos(pi / 3),-1.0 * Math.sin(pi / 3),0,2},{
+                    Math.sin(pi / 3),Math.cos(pi / 3),0,1},{
                     0,0,1,0},
                 {0,0,0,1}};
             double[][] matrixExp = new double[][]
             {{0,-1.0,0,3.366025404},{
-              1,0,0,-3.366025404},{
+                    1,0,0,-3.366025404},{
                     0,0,0,0},
                 {0,0,0,0}};
-                Matrix msb=new Matrix(Tsb);
-                Matrix msc=new Matrix(Tsc);
-                Matrix me = Matrix.scalarMulti(Math.PI/6,new Matrix( matrixExp));
-                Matrix res = msc.multiply(msb.inverse());
-                errorReport+="mInv="+res.toString()+"\n";
-            se3group se3g= se3ops.matrixExp6(new se3algebra(me),false);
-            
-            errorReport +="me6res="+se3g.matrix.toString()+"\n";
-                return se3g.matrix.isEqual(res);
-            
+            Matrix msb=new Matrix(Tsb);
+            Matrix msc=new Matrix(Tsc);
+            Matrix me = Matrix.scalarMulti(Math.PI / 6, new Matrix(matrixExp));
+            Matrix res = msc.multiply(msb.inverse());
+            errorReport += "mInv=" + res.toString() + "\n";
+            se3group se3g= se3ops.matrixExp6(new se3algebra(me), false);
+
+            errorReport += "me6res=" + se3g.matrix.toString() + "\n";
+            return se3g.matrix.isEqual(res);
+
         }
         catch (Exception e)
         {
@@ -260,22 +264,22 @@ public class se3tests extends BaseTest
         }
         return false;
     }
-    
+
     private boolean testMatrixLog6()
     {
         try
         {
             double pi = Math.PI;
             double[][] Tsb = new double[][]
-            {{Math.cos(pi/6),-1.0*Math.sin(pi/6),0,1},{
-                    Math.sin(pi/6),Math.cos(pi/6),0,2},{
+            {{Math.cos(pi / 6),-1.0 * Math.sin(pi / 6),0,1},{
+                    Math.sin(pi / 6),Math.cos(pi / 6),0,2},{
                     0,0,1,0},
                 {0,0,0,1}};
-            
+
             double[][] Tsc = new double[][]
             {
-                {Math.cos(pi/3), -1.0*Math.sin(pi/3), 0, 2},
-                {Math.sin(pi/3), Math.cos(pi/3), 0, 1},
+                {Math.cos(pi / 3), -1.0 * Math.sin(pi / 3), 0, 2},
+                {Math.sin(pi / 3), Math.cos(pi / 3), 0, 1},
                 {0, 0, 1, 0},
                 {0, 0, 0, 1}
             };
@@ -288,15 +292,48 @@ public class se3tests extends BaseTest
             Matrix msc=new Matrix(Tsc);
             Matrix me = new Matrix(matrixExp);
             Matrix res = msc.multiply(msb.inverse());
-            se3algebra se3alg = se3ops.matrixLog6(new se3group(res),false);
+            se3algebra se3alg = se3ops.matrixLog6(new se3group(res), false);
 			//silencing
             return se3alg.matrix.isEqual(me);
-            
+
         }
         catch (Exception e)
         {
-            errorReport += "\n" + e.getMessage() + " from matrixexp3\n";
+            errorReport += "\n" + e.getMessage() + " from testMatrixLog6\n";
             e.printStackTrace();
         }
         return false;
-    }};
+    }
+    
+    private boolean testMatrixExpLog6()
+    {
+        try
+        {
+            double pi = Math.PI;
+            Vector3 vec=new Vector3(Matrix.rand(3,1));
+            so3group so3g=so3group.generalRotation(vec.normalize(),pi/5);
+            Vector3 pos=new Vector3(1,2,3);
+            Matrix se3gmat = Matrix.blockToMatrix(new Matrix[][]{{so3g.matrix,pos},{Matrix.zeros(1, 3),Matrix.ones(1, 1)}});
+            se3group se3g=new se3group(se3gmat);
+            MainActivity.appendLog("**"+se3g.matrix.toString(),true);
+            se3algebra se3alg=se3ops.matrixLog6(se3g,true);
+            se3group newSe3g=se3ops.matrixExp6(se3alg,true);
+            
+            MainActivity.appendLog("**"+newSe3g.matrix.toString(),true);
+            return newSe3g.matrix.isEqual(se3g.matrix);
+
+        }
+        catch (Exception e)
+        {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            String stackTrace = sw.toString();
+
+            errorReport += "Exception: " + e.getMessage() + " from testMatrixExpLog6\n";
+            errorReport += "Stack trace:\n" + stackTrace + "\n";
+            e.printStackTrace();
+        }
+        return false;
+    }
+};

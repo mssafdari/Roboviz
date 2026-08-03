@@ -53,7 +53,7 @@ public class so3ops
     {
         log="";
         if(verbose)
-        MainActivity.appendTitle("matrixExp3",false);
+        MainActivity.appendTitle("matrixExp3",verbose);
         so3algebra so3alg;
         try
         {
@@ -66,10 +66,12 @@ public class so3ops
             {
                 if (R.matrix.isEqual(Matrix.identity(3)))
                 {
+                    MainActivity.appendLog("mexp3_identity",verbose);
                     return so3alg;
                 }
                 else if (R.matrix.trace() == -1)
                 {
+                    MainActivity.appendLog("mexp3_pi_trace=-1",verbose);
                     at.theta = Math.PI;
                     if (R.matrix.data[2][2] != -1)
                     {
@@ -85,14 +87,15 @@ public class so3ops
                     }
                     Vec = new Vector3(temp.data[0][0], temp.data[1][0], temp.data[2][0]);
                     so3alg = so3algebra.vecToSo3(Vec);
+                    so3alg = new so3algebra(Matrix.scalarMulti(Math.PI,so3alg.matrix));// shoud i multiply by pi here
                     log += "vec=" + Vec.toString()+"\n";
                     log += "so3alg=" + so3alg.matrix.toString() + "\n";
-                    if(verbose)
                     MainActivity.appendLog(log,verbose);
                     return so3alg;
                 }
                 else
                 {
+                    MainActivity.appendLog("mexp3_theta-notZeroOrPi",verbose);
                     at.theta = Math.acos(.5 * (R.matrix.trace() - 1));
                     Matrix omega = Matrix.scalarMulti(.5 * at.theta / Math.sin(at.theta), R.matrix.subtract(R.matrix.transpose()));
                     Vec = so3algebra.so3ToVec(new so3algebra(omega));

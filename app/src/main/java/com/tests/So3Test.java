@@ -15,6 +15,7 @@ import com.math.so3algebra;
 import com.math.axis3theta;
 import com.math.so3ops;
 import java.util.Locale;
+import com.roboviz.MainActivity;
 
 public class So3Test extends BaseTest
 {
@@ -35,20 +36,25 @@ public class So3Test extends BaseTest
 			"testing so3toVec",
 			"testing AxisAng3",
 			"testing MatrixExp3",
-			"testing MatruxLog3"
+			"testing MatrixLog3",
+            "testRandomLogExp3",
+            "testPiCaseLogExp3"
         };
     }
 
     @Override
     protected boolean[] runTests()
 	{
+        MainActivity.appendTitle("\n***Running so3 tests***\n",true);
         return new boolean[]{
             testRotInv(),
             testVecToso3(),
             testso3ToVec(),
 			testAxisAng3(),
 			testMatrixExp3(),
-			testMatrixLog()
+			testMatrixLog3(),
+            testRandomLogExp3(),
+            testPiCaseLogExp3()
         };
     }
     
@@ -164,7 +170,7 @@ public class So3Test extends BaseTest
         return false;
     }
 
-	private boolean testMatrixLog()
+	private boolean testMatrixLog3()
 	{
         try
         {
@@ -185,6 +191,38 @@ public class So3Test extends BaseTest
         return false;
     }
     
+    private boolean testRandomLogExp3()
+    {
+        try
+        {
+            Vector3 omg=new Vector3(Matrix.rand(3,1));
+            so3group so3g= so3group.generalRotation(omg.normalize(),Math.PI/7);
+            so3algebra so3alg= so3ops.matrixLog3(so3g,false);
+            so3group newSo3g=so3ops.matrixExp3(so3alg,false);
+            return so3g.matrix.isEqual(newSo3g.matrix);
+        }
+        catch (Exception e)
+        {
+            errorReport += e.getMessage() + "from matrixlogexp3\n";
+        }
+        return false;
+    }
+    
+    private boolean testPiCaseLogExp3()
+    {
+        try
+        {
+            so3group so3g= so3group.roll(Math.PI);
+            so3algebra so3alg= so3ops.matrixLog3(so3g,false);
+            so3group newSo3g=so3ops.matrixExp3(so3alg,false);
+            return so3g.matrix.isEqual(newSo3g.matrix);
+        }
+        catch (Exception e)
+        {
+            errorReport += e.getMessage() + "from matrixlogexp3\n";
+        }
+        return false;
+    }
 }
 
   

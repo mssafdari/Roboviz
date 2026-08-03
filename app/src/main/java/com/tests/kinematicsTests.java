@@ -48,6 +48,7 @@ public class kinematicsTests extends BaseTest
     @Override
     protected boolean[] runTests()
     {
+        MainActivity.appendTitle("\n***Running kinenatics tests***\n",true);
         return new boolean[]{
 			testFKinBody(),
             testFKinSpace(),
@@ -185,7 +186,7 @@ public class kinematicsTests extends BaseTest
     {
         try
         {
-            MainActivity.clearLog();
+            //MainActivity.clearLog();
             MainActivity.doLog=true;
 			initFK_IK();
 
@@ -205,7 +206,7 @@ public class kinematicsTests extends BaseTest
 			Vector thetaListInv=inversekinematics.IKinBody(Blist,M,ee,new Vector(new double[][]{{.1},{.1},{.1}}),true);
 			//errorReport+=thetaListInv.thetaList.toString()+el+thetaListInv.success+el;
 			errorReport+="fk_ik="+el+forwardKinematics.FKinBody(M,Blist,thetaListInv,false).matrix.toString()+el;
-            MainActivity.doLog=false;
+            //MainActivity.doLog=false;
 			return thetaListInv.isEqual(thetaList);
         }
         catch (Exception e)
@@ -218,7 +219,7 @@ public class kinematicsTests extends BaseTest
             errorReport += "Exception: " + e.getMessage() + " from IKBody\n";
             errorReport += "Stack trace:\n" + stackTrace + "\n";
         }
-        MainActivity.doLog=false;
+        //MainActivity.doLog=false;
         return false;
     }
 	

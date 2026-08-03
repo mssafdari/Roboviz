@@ -1,80 +1,40 @@
-length=3; index=3from IK
-;)
-Exception: Attempt to invoke virtual method 'int com.math.Matrix.getRows()' on a null object reference from IKBody
-Stack trace:
-java.lang.NullPointerException: Attempt to invoke virtual method 'int com.math.Matrix.getRows()' on a null object reference
-    at com.kinematics.forwardKinematics.FKinBody(forwardKinematics.java:14)
-    at com.tests.kinematicsTests.testIKinBody(kinematicsTests.java:203)
-    at com.tests.kinematicsTests.runTests(kinematicsTests.java:51)
-    at com.tests.BaseTest.run(BaseTest.java:27)
-    at com.roboviz.MainActivity$100000000.onClick(MainActivity.java:69)
-    at android.view.View.performClick(View.java:8230)
-    at android.view.View.performClickInternal(View.java:8203)
-    at android.view.View.-$$Nest$mperformClickInternal(View.java:0)
-    at android.view.View$PerformClick.run(View.java:32881)
-    at android.os.Handler.handleCallback(Handler.java:959)
-    at android.os.Handler.dispatchMessage(Handler.java:100)
-    at android.os.Looper.loopOnce(Looper.java:249)
-    at android.os.Looper.loop(Looper.java:337)
-    at android.app.ActivityThread.main(ActivityThread.java:9562)
-    at java.lang.reflect.Method.invoke(Native Method)
-    at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:648)
-	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1005)
-	
-	public static IKresult IKinBody(ArrayList<se3algebra> Blist, se3group M, se3group T, Vector thetaList0)
+static double c(double t)
     {
-        Result.success = false;
-        int iteration=0;
-        ArrayList<Vector6> jb;
-        Vector3 Wb= new Vector3();
-        Vector3 Vb= new Vector3();
-        Vector thetaList;
-        Matrix jbody;
-        se3group Tsb,X;
-        se3algebra bodyse3alg;
-        se3opslog ops=new se3opslog();
-        thetaList = thetaList0;
-        try
-        {
-        Result.log += thetaList.toString();
-        
-            do{
-                jb = jacobianBuilder.JacobianBody(Blist, thetaList);
-                Tsb = forwardKinematics.FKinBody(M, Blist, thetaList);
-                //Result.log+="Tsb="+el+Tsb.matrix.toString()+el;
-                X = new se3group(Tsb.matrix.inverse().multiply(T.matrix));//x=Tsb\T
-                //Result.log+="Tsb-1*Tdes="+el+X.matrix.toString()+el;
-                
-                ops = se3ops.matrixLog6(X);
-                bodyse3alg = ops.se3alg;
-                Result.log += "bodyse3alg=" + el + bodyse3alg.matrix.toString() + el;
-                Result.log += el + ops.log + el;
-                jbody = ArrayListToMatrix(jb);
-                thetaList = thetaList.add(jbody.pseudoInverse().multiply(se3algebra.se3ToVec(bodyse3alg)));
-                Wb = bodyse3alg.getOmega();
-                Vb = bodyse3alg.getVelocity();
-                iteration++;
-            }while((Wb.norm() > eomg || Vb.norm() > ev) && iteration < maxIterations);
-            //Result.log+="wb.norm="+Wb.norm()+el+"vb.norm="+Vb.norm()+el;
-            Result.thetaList = thetaList;
-             /*for(int i=0;i<jb.size();i++){
-             Result.log+="jb("+i+")="+el+jb.get(i).toString()+el;
-             }
-             Result.log+="jbody="+el+jbody.toString()+el;*/
+        return Math.cos(t);
+    }
+    static double s(double t)
+    {
+        return Math.sin(t);
+    }
+    public static so3group generalRotation(Vector3 omega, double t)
+    {
 
-            if (maxIterations > iteration)
+        double w1=omega.x,w2=omega.y,w3=omega.z;
+        // Helper to get (1 - cos(theta))
+        double oneMinusCt = 1.0 - c(t);
+
+        double[][] rotMatrix = {
             {
-                Result.success = true;
+                c(t) + w1 * w1 * oneMinusCt, 
+                w1 * w2 * oneMinusCt - w3 * s(t), 
+                w1 * w3 * oneMinusCt + w2 * s(t)
+            },
+            {
+                w1 * w2 * oneMinusCt + w3 * s(t), 
+                c(t) + w2 * w2 * oneMinusCt, 
+                w2 * w3 * oneMinusCt - w1 * s(t)
+            },
+            {
+                w1 * w3 * oneMinusCt - w2 * s(t), 
+                w2 * w3 * oneMinusCt + w1 * s(t), 
+                c(t) + w3 * w3 * oneMinusCt
             }
-        }
-        catch (Exception e)
-        {
-            Result.log +=el + e.getMessage() + "from IK\n";
-            
-        }
-        Result.log+=";)"+el;
-
-		return Result;
-		
-		if you see ;) is after catch block and it has error
-		length=3; index=3from IK
+        };
+        return new so3group(new Matrix(rotMatrix));
+    }
+    so3group so3g=so3group.generalRotation(new Vector3(Matrix.rand(3,1)),pi/5);
+    0.8244  -0.4577   0.0921   1.0000 ]
+[  0.4668   0.8104  -0.1541   2.0000 ]
+[ -0.0069   0.1794   0.9271   3.0000 ]
+[  0.0000   0.0000   0.0000   1.0000
+isnt it valid transformation

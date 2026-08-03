@@ -9,7 +9,8 @@ import android.view.*;
 import android.app.Activity;
 import com.roboviz.R;
 import android.os.Environment;
-import java.security.Identity;  
+import java.security.Identity;
+import com.roboviz.MainActivity;  
 
 public class matrixTests extends BaseTest {
     private static final String TAG = "matrix test";
@@ -33,6 +34,7 @@ public class matrixTests extends BaseTest {
 
     @Override
     protected boolean[] runTests() {
+        MainActivity.appendTitle("\n***Running Matrix tests***\n",true);
         return new boolean[]{
             testMatrixMultiply(),
             testTranspose(),

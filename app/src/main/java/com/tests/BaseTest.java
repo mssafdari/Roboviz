@@ -21,7 +21,7 @@ public abstract class BaseTest {
     protected abstract String getError();
 
     // Template method for running all tests
-    public String run() {
+    public String run(Boolean verbose) {
         String msg = "";
         String[] testNames = getTestNames();
         boolean[] testResults = runTests();
@@ -36,6 +36,7 @@ public abstract class BaseTest {
 
         msg += "Passed: " + passed + "\n";
         msg += "Failed: " + failed + "\n";
+        if(verbose)
         msg += "errors;(\n" + err;
         return msg;
     }

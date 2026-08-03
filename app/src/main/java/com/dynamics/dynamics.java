@@ -41,7 +41,7 @@ public class dynamics
 		Matrix massM=massMatrix(thetaDTheta.getThetaList(), model);
 		Vector VelQuadForces=velQuadraticForces(thetaDTheta.getThetaList(), thetaDTheta.getDThetaList(), model);
 		Vector gforces=gravityForces(thetaDTheta.getThetaList(), model);
-		Vector eeForces=endEffectorForces(thetaDTheta.getThetaList(), Ftip, model);
+		Vector eeForces=endEffectorForces(thetaDTheta.getThetaList(), Ftip, model,false);
 		Vector massThetadd=massM.multiply(thetaDTheta.getDThetaList());
 		return  massThetadd.add(VelQuadForces).add(gforces).add(eeForces);
 	}
@@ -91,9 +91,9 @@ public class dynamics
 	}
 
 	//JTFtip = EndEffectorForces(thetalist,Ftip,Mlist,Glist,Slist)
-	public static Vector endEffectorForces(Vector thetaList, Vector6 Ftip, robotModel model)
+	public static Vector endEffectorForces(Vector thetaList, Vector6 Ftip, robotModel model,Boolean verbose)
 	{
-		ArrayList<Vector6> jac=jacobianBuilder.JacobianSpace(model.Slist, thetaList);
+		ArrayList<Vector6> jac=jacobianBuilder.JacobianSpace(model.Slist, thetaList,false);
 		double[][] jacdata=new double[6][jac.size()];
 		for (int i=0;i < jac.size();i++)
 		{
@@ -112,7 +112,7 @@ public class dynamics
 			massM.add(Jbi.get(i).transpose().multiply(model.Glist.get(i).matrix).multiply(Jbi.get(i)));
 		}
 		Vector hthetathetadot=inverseDynamics(thetaDTheta,Vector.zeros(tauList.getRows()),new Vector6(),model);
-		Vector eeForces=endEffectorForces(thetaDTheta.getThetaList(),Ftip,model);
+		Vector eeForces=endEffectorForces(thetaDTheta.getThetaList(),Ftip,model,false);
 		Vector rhs=tauList.subtract(hthetathetadot).subtract(eeForces);
 		return massM.inverse().multiply(rhs);
 	}
@@ -223,7 +223,7 @@ public class dynamics
 		ArrayList<se3group> Tlist=new ArrayList<se3group>();
 		for (int i=0;i < Slist.size();i++)
 		{
-			T = new se3group(se3ops.matrixExp6(new se3algebra(Matrix.scalarMulti(thetaList.get(i, 0), Slist.get(i).matrix))).matrix.multiply(T.matrix));
+			T = new se3group(se3ops.matrixExp6(new se3algebra(Matrix.scalarMulti(thetaList.get(i, 0), Slist.get(i).matrix)),false).matrix.multiply(T.matrix));
 			Tlist.add(T);
 		}
 		return Tlist;
@@ -291,13 +291,13 @@ public class dynamics
 	}
 	private static ArrayList<Vector> buildJbi(Vector thetaList, robotModel model)
 	{
-		se3group Tsb=forwardKinematics.FKinSpace(model.Mlist.get(thetaList.getRows()), model.Slist, thetaList);
+		se3group Tsb=forwardKinematics.FKinSpace(model.Mlist.get(thetaList.getRows()), model.Slist, thetaList,false);
 		ArrayList<se3algebra> Blist=new ArrayList<se3algebra>();
 		for (int i=0;i < model.Slist.size();i++)
 		{
 			Blist.add(new se3algebra(se3group.adjoint(Tsb).multiply(model.Slist.get(i).matrix)));
 		}
-		ArrayList<Vector6> JacBody=jacobianBuilder.JacobianBody(Blist, thetaList);
+		ArrayList<Vector6> JacBody=jacobianBuilder.JacobianBody(Blist, thetaList,false);
 		ArrayList<Vector> Jbi=new ArrayList<Vector>();
 		double[][] temp=new double[6][6];
 		for (int i=0;i < JacBody.size();i++)

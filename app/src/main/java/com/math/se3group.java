@@ -23,7 +23,6 @@ public class se3group
 	
 	public static Matrix adjoint(se3group T){
 		rotPos Rp = transToRp(T);
-        se3group adjoi =new se3group(Matrix.identity(4));
         log +="T=\n"+T.matrix.toString();
         log +="Rp.R=\n"+Rp.rot.matrix.toString();
         
@@ -38,7 +37,7 @@ public class se3group
                                               {adj11.matrix, Rp.rot.matrix}
                                           });
         log +="adh=\n"+adj.toString();
-        MainActivity.appendLog(log);
+        MainActivity.appendLog(log,false);
 		return adj;
 	}
 	

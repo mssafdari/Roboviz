@@ -7,12 +7,6 @@ public class so3algebra
 	public so3algebra(Matrix mat){
 		matrix=mat;
 	}
-	/*public static boolean isSkewSymmetric(Matrix so3){
-		if(so3.transpose().isEqual(Matrix.scalarMulti(-1.0,so3))){
-			return true;
-		}
-		return false;
-	}*/
     public static boolean isSkewSymmetric(Matrix so3) {
         if (so3.data.length != 3 || so3.data[0].length != 3) {
             return false;

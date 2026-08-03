@@ -69,7 +69,7 @@ public class MainActivity extends Activity
 						kinematicsTests kT=new kinematicsTests();
 						String msg = mT.run() + so3T.run() + se3T.run() + kT.run();
 						debug.setGravity(Gravity.CENTER);
-						appendLog(msg);
+						appendLog(msg,true);
                         updateLogDisplay();
 
 						Log.d(TAG, "Test result: " + msg);
@@ -77,7 +77,7 @@ public class MainActivity extends Activity
 					catch (Exception e)
 					{
 						Log.e(TAG, "Error in test: " + e.getMessage());
-						appendLog("Error: " + e.getMessage());
+						appendLog("Error: " + e.getMessage(),true);
                         updateLogDisplay();
 						e.printStackTrace();
 					}
@@ -218,12 +218,19 @@ public class MainActivity extends Activity
             debugLog = "";
         }
 
-        public static void appendLog(String text) {
-            if(doLog){
+        public static void appendLog(String text,Boolean verbose) {
+            if(doLog && verbose){
                 debugLog += text + EL;
             }
         }
 
+        public static void appendTitle(String text,Boolean verbose) {
+            if(doLog && verbose){
+                debugLog += text + EL;
+                debugLog +="______________________________________\n";
+            }
+        }
+        
         // In your UI, you can display it
         private void updateLogDisplay() { 
             debug.setText(debugLog);

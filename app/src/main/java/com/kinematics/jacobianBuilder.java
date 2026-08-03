@@ -9,7 +9,7 @@ import com.math.Vector;
 
 public class jacobianBuilder
 {
-	public static ArrayList<Vector6> JacobianBody(ArrayList<se3algebra> Blist, Vector thetaList)
+	public static ArrayList<Vector6> JacobianBody(ArrayList<se3algebra> Blist, Vector thetaList,Boolean verbose)
 	{
 		if (thetaList.getCols() != 1)
 		{
@@ -32,7 +32,7 @@ public class jacobianBuilder
 			// Update T for the next joint (i-1)
 			// T = T * e^[-B_i]θ_i  (RIGHT multiplication! Not LEFT)
 			se3algebra se3alg = new se3algebra(Matrix.scalarMulti(-thetaList.get(i), Blist.get(i).matrix));
-			se3group expB = se3ops.matrixExp6(se3alg);
+			se3group expB = se3ops.matrixExp6(se3alg,verbose);
 			T.matrix = T.matrix.multiply(expB.matrix);
 			//               ↑ RIGHT multiply
 		}
@@ -40,7 +40,7 @@ public class jacobianBuilder
 		return jacobianData;
 	}
 
-	public static ArrayList<Vector6> JacobianSpace(ArrayList<se3algebra> Slist, Vector thetaList)
+	public static ArrayList<Vector6> JacobianSpace(ArrayList<se3algebra> Slist, Vector thetaList,Boolean verbose)
 	{
 		if (thetaList.getCols() != 1)
 		{
@@ -51,7 +51,7 @@ public class jacobianBuilder
 		for (int i=0;i < thetaList.getRows();i++)
 		{
 			jacobianData.add(new Vector6(se3group.adjoint(se3g).multiply(se3algebra.se3ToVec(Slist.get(i)))));
-			se3g.matrix = se3g.matrix.multiply(se3ops.matrixExp6(new se3algebra(Matrix.scalarMulti(thetaList.get(i), Slist.get(i).matrix))).matrix);
+			se3g.matrix = se3g.matrix.multiply(se3ops.matrixExp6(new se3algebra(Matrix.scalarMulti(thetaList.get(i), Slist.get(i).matrix)),verbose).matrix);
 		}
 		return jacobianData;
 	}

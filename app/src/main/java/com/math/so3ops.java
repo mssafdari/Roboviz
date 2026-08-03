@@ -4,12 +4,15 @@ import com.roboviz.MainActivity;
 public class so3ops
 {
     private static String log;
-	public static so3group matrixExp3(so3algebra so3alg)
+	public static so3group matrixExp3(so3algebra so3alg,Boolean verbose)
     {
+        log="";
+        MainActivity.appendTitle("matrixExp3",verbose);
+        
         so3group so3g;
         try
         {
-            MainActivity.appendLog( so3alg.matrix.toString() + "\n");
+            log+= so3alg.matrix.toString() + "\n";
             if (so3algebra.isSkewSymmetric(so3alg.matrix) || true)
             {
                 Vector3 omg =so3algebra.so3ToVec(so3alg);
@@ -18,7 +21,7 @@ public class so3ops
                 if (Math.abs(theta) < 1e-10)
                 {
                     so3g = new so3group(Matrix.identity(3));
-                    MainActivity.appendLog( Matrix.identity(3).toString());
+                    MainActivity.appendLog( Matrix.identity(3).toString(),false);
                     return so3g;
                 }
 
@@ -35,7 +38,7 @@ public class so3ops
                 log += "sin(theta)[omega]=" + term1.toString() + "\n";
                 log += "1-cos(theta)[omega]^2=" + term2.toString() + "\n";
                 log += "result="+identity.add(term1).add(term2)+"\n";
-                MainActivity.appendLog(log);
+                MainActivity.appendLog(log,verbose);
                 return so3g;
             }
         }
@@ -46,8 +49,11 @@ public class so3ops
 
 		throw new IllegalArgumentException("Input is not a valid skew symmetric matrix.");
 	}
-	public static so3algebra matrixLog3(so3group R)
+	public static so3algebra matrixLog3(so3group R,boolean verbose)
     {
+        log="";
+        if(verbose)
+        MainActivity.appendTitle("matrixExp3",false);
         so3algebra so3alg;
         try
         {
@@ -79,9 +85,10 @@ public class so3ops
                     }
                     Vec = new Vector3(temp.data[0][0], temp.data[1][0], temp.data[2][0]);
                     so3alg = so3algebra.vecToSo3(Vec);
-                    log += "vec=" + Vec.toString()+"\n";;
+                    log += "vec=" + Vec.toString()+"\n";
                     log += "so3alg=" + so3alg.matrix.toString() + "\n";
-                    MainActivity.appendLog(log);
+                    if(verbose)
+                    MainActivity.appendLog(log,verbose);
                     return so3alg;
                 }
                 else
@@ -92,7 +99,8 @@ public class so3ops
                     so3alg = so3algebra.vecToSo3(Vec);  
                     log += "vec=" + Vec.toString()+"\n";
                     log += "so3alg=" + so3alg.matrix.toString() + "\n";
-                    MainActivity.appendLog(log);
+                    if(verbose)
+                    MainActivity.appendLog(log,verbose);
                     return so3alg;
                 }
             }

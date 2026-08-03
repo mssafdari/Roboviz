@@ -22,8 +22,9 @@ public class inversekinematics
 	private static String el="\n";
     private static String log;
 
-	public static Vector IKinBody(ArrayList<se3algebra> Blist, se3group M, se3group T, Vector thetaList0)
+	public static Vector IKinBody(ArrayList<se3algebra> Blist, se3group M, se3group T, Vector thetaList0,Boolean verbose)
 	{
+        log="";
 		int iteration=0;
 		ArrayList<Vector6> jb;
 		Vector3 Wb= new Vector3();
@@ -39,15 +40,15 @@ public class inversekinematics
 		log += thetaList.toString();
         
             do{
-                jb = jacobianBuilder.JacobianBody(Blist, thetaList);
-                Tsb = forwardKinematics.FKinBody(M, Blist, thetaList);
+                jb = jacobianBuilder.JacobianBody(Blist, thetaList,false);
+                Tsb = forwardKinematics.FKinBody(M, Blist, thetaList,false);
                 log+="Tsb="+el+Tsb.matrix.toString()+el;
                 X = new se3group(Tsb.matrix.inverse().multiply(T.matrix));//x=Tsb\T
                 log+="Tsb-1*Tdes="+el+X.matrix.toString()+el;
                 
-                se3alg = se3ops.matrixLog6(X);
+                se3alg = se3ops.matrixLog6(X,true);
                 bodyse3alg = se3alg;
-                MainActivity.appendLog("bodyse3alg=" + el + bodyse3alg.matrix.toString() + el);
+                MainActivity.appendLog("bodyse3alg=" + el + bodyse3alg.matrix.toString() + el,verbose);
                 
                 jbody = ArrayListToMatrix(jb);
                 thetaList = thetaList.add(jbody.pseudoInverse().multiply(se3algebra.se3ToVec(bodyse3alg)));
@@ -77,15 +78,16 @@ public class inversekinematics
             log += "Stack trace:\n" + stackTrace + "\n";
         }
         log+=";)"+el;
-        MainActivity.appendLog(log);
+        MainActivity.appendLog(log,verbose);
 
 		return thetaList;
 	}
 	//Vb=MatrixLog6(x);
 	//Vs=VecTose3(Adjoint(Tsb)*se3ToVec(Vb));
 
-	public static Vector IKinSpace(ArrayList<se3algebra> Slist, se3group M, se3group T, Vector thetaList0)
+	public static Vector IKinSpace(ArrayList<se3algebra> Slist, se3group M, se3group T, Vector thetaList0,Boolean verbose)
 	{
+        log="";
 		int iteration =0;
 		ArrayList<Vector6> js;
 		Vector3 Ws= new Vector3();
@@ -97,10 +99,10 @@ public class inversekinematics
 		thetaList = thetaList0;
 		log += thetaList.toString();
 		do{
-			js = jacobianBuilder.JacobianSpace(Slist, thetaList);
-			Tsb = forwardKinematics.FKinSpace(M, Slist, thetaList);
+			js = jacobianBuilder.JacobianSpace(Slist, thetaList,false);
+			Tsb = forwardKinematics.FKinSpace(M, Slist, thetaList,false);
 			X = new se3group(Tsb.matrix.inverse().multiply(T.matrix));
-			bodyse3alg = se3ops.matrixLog6(X);
+			bodyse3alg = se3ops.matrixLog6(X,true);
 			spacese3alg = se3algebra.vecToSe3(new Vector6(se3group.adjoint(Tsb).multiply(se3algebra.se3ToVec(bodyse3alg))));
 			jSpace = ArrayListToMatrix(js);
 			thetaList = thetaList.add(jSpace.pseudoInverse().multiply(se3algebra.se3ToVec(spacese3alg)));
@@ -113,7 +115,7 @@ public class inversekinematics
 		{
 			throw new IllegalStateException("IKspace didnt converged");
 		}
-        MainActivity.appendLog(log);
+        MainActivity.appendLog(log,verbose);
 		return thetaList;
 	}
 

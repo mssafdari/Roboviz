@@ -148,7 +148,7 @@ public class So3Test extends BaseTest
                 {-0.433000887 ,0.058011059 ,0.899524846}
             };
             //errorReport+=so3alg.matrix.toString();
-            so3group so3g = so3ops.matrixExp3(so3alg);
+            so3group so3g = so3ops.matrixExp3(so3alg,false);
             /*for (int i = 0; i < 3; i++) {
                 for (int j = 0; j < 3; j++) {
                     errorReport+=  String.format(Locale.US,"%.9f ", so3g.matrix.get(i,j));
@@ -174,7 +174,7 @@ public class So3Test extends BaseTest
                 {0.866031163, -0.250000512 ,0.433000887 },
                 {0.250000512, 0.966506317 ,0.058011059 },
                 {-0.433000887 ,0.058011059 ,0.899524846}};
-            so3algebra so3alg = so3ops.matrixLog3((new so3group(new Matrix(data))));
+            so3algebra so3alg = so3ops.matrixLog3((new so3group(new Matrix(data))),false);
             //errorReport+= so3g.log;
             return so3alg.matrix.isEqual(truth.matrix);
         }

@@ -67,7 +67,7 @@ public class trajectory
 		if (method == timeScalingMethod.CUBIC)
 			for (int i=0;i < N;i++)
 			{
-				tempSe3alg = se3ops.matrixLog6(new se3group(XstartInv.matrix.multiply(Xend.matrix)));
+				tempSe3alg = se3ops.matrixLog6(new se3group(XstartInv.matrix.multiply(Xend.matrix)),false);
 				tempSe3g = new se3group(Xstart.matrix.multiply(Matrix.scalarMulti(cubicTimeScaling(Tf, i * dt), tempSe3alg.matrix)));
 				Jtrajectory.add(tempSe3g);
 			}
@@ -75,7 +75,7 @@ public class trajectory
         {
             for (int i=0;i < N;i++)
             {
-                tempSe3alg = se3ops.matrixLog6(new se3group(XstartInv.matrix.multiply(Xend.matrix)));
+                tempSe3alg = se3ops.matrixLog6(new se3group(XstartInv.matrix.multiply(Xend.matrix)),false);
                 tempSe3g = new se3group(Xstart.matrix.multiply(Matrix.scalarMulti(quinticTimeScaling(Tf, i * dt), tempSe3alg.matrix)));
                 Jtrajectory.add(tempSe3g);
             }
@@ -100,7 +100,7 @@ public class trajectory
         {
 			for (int i=0;i < N;i++)
 			{
-				tempScr = so3ops.matrixLog3(new so3group(rotStart.matrix.transpose().multiply(rotEnd.matrix)));
+				tempScr = so3ops.matrixLog3(new so3group(rotStart.matrix.transpose().multiply(rotEnd.matrix)),false);
 				tempRot = new so3group(rotStart.matrix.multiply(Matrix.scalarMulti(cubicTimeScaling(Tf, i * dt), tempScr.matrix)));
 				tempPos = new Vector3(posStart.add(Vector.scalarMulti(cubicTimeScaling(Tf, i * dt), (posEnd.subtract(posStart)))));
 				temp = se3group.RpToTrans(tempRot, tempPos);
@@ -111,7 +111,7 @@ public class trajectory
         {
 			for (int i=0;i < N;i++)
 			{
-				tempScr = so3ops.matrixLog3(new so3group(rotStart.matrix.transpose().multiply(rotEnd.matrix)));
+				tempScr = so3ops.matrixLog3(new so3group(rotStart.matrix.transpose().multiply(rotEnd.matrix)),false);
 				tempRot = new so3group(rotStart.matrix.multiply(Matrix.scalarMulti(quinticTimeScaling(Tf, i * dt), tempScr.matrix)));
 				tempPos = new Vector3(posStart.add(Vector.scalarMulti(cubicTimeScaling(Tf, i * dt), (posEnd.subtract(posStart)))));
 				temp = se3group.RpToTrans(tempRot, tempPos);

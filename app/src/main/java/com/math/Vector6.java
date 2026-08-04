@@ -1,4 +1,5 @@
 package com.math;
+import org.apache.commons.math3.analysis.function.Sqrt;
 
 class axis6theta{
 	Vector6 axis;
@@ -67,4 +68,12 @@ public class Vector6 extends Vector {
 		return new Vector6(new Vector3(data[0][col],data[1][col],data[2][col]),
 		                   new Vector3(data[3][col],data[4][col],data[5][col]));
 	}
+    
+    public double norm(){
+        double sum=0;
+        for(int i=0;i<6;i++){
+            sum+=get(i)*get(i);
+        }
+        return Math.sqrt(sum);
+    }
 }

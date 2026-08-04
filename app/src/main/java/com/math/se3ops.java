@@ -17,7 +17,7 @@ public class se3ops
             {
                 if (se3alg.matrix.getSubMatrix(3, 0, 1, 4).isEqual(Matrix.zeros(4, 4).getSubMatrix(3, 0, 1, 4)))
                 {
-                    log += "input matrix=" + se3alg.matrix.toString() + "\n";
+                    log += "input matrix="+ el + se3alg.matrix.toString() + "\n";
                     Vector6 V = se3algebra.se3ToVec(se3alg);
                     axis6theta at =Vector6.axisAng6(V);
                     Vector3 omg = at.axis.omega;
@@ -34,10 +34,10 @@ public class se3ops
                         Matrix part2 = Matrix.scalarMulti(1.0 - Math.cos(at.theta), omeg.matrix);
                         Matrix part3 = Matrix.scalarMulti(at.theta - Math.sin(at.theta), omeg.matrix.multiply(omeg.matrix));
                         Matrix result = part1.add(part2).add(part3).multiply(at.axis.velocity);
-                        log += "se3g_with_normOfOmega_1=" + result.rows + "x" + result.cols + "\n";
+                        log += "se3g_with_normOfOmega_1="+ el + result.rows + "x" + result.cols + "\n";
                         Matrix se3gmat = Matrix.blockToMatrix(new Matrix[][]{{o.matrix,result},{Matrix.zeros(1, 3),Matrix.identity(1)}});
                         se3g = new se3group(se3gmat);
-                        log += "se3g_with_normOfOmega_1=" + se3g.matrix.toString();
+                        log += "se3g_with_normOfOmega_1="+ el + se3g.matrix.toString();
                     }
                     else if (vel.norm() == 1.0 && omg.norm() == 0)
                     {
@@ -45,12 +45,13 @@ public class se3ops
                         Matrix.setSubMatrix(result, 0, 3, (Matrix.scalarMulti(at.theta, at.axis.velocity)).data);
                         se3g = new se3group(new Matrix(result));
 
-                        log += "se3g_with_normOfVelocity_1=" + se3g.matrix.toString();
+                        log += "se3g_with_normOfVelocity_1="+ el + se3g.matrix.toString();
                     }
                     else
                     {
                         se3g = new se3group(Matrix.identity(4));
-                        log += "se3g3=" + se3g.matrix.toString();
+                        log += "se3g3="+ el + se3g.matrix.toString();
+                        log+= el + "screw is=" + el + se3alg.matrix.toString();
                     }
                     MainActivity.appendLog(log, verbose);
                     return se3g;
@@ -75,7 +76,7 @@ public class se3ops
             {   
 
                 Vector3 vel = new Vector3(se3g.matrix.data[0][3], se3g.matrix.data[1][3], se3g.matrix.data[2][3]);
-                log += "vel=" + vel.toString();
+                log += "vel="+ el + vel.toString() + el;
                 // Vector3 omgvec= new Vector3(se3gr.matrix.getSubMatrix(0, 0, 3, 3));
                 if (se3g.matrix.getSubMatrix(0, 0, 3, 3).isEqual(Matrix.identity(3)))
                 {
@@ -89,11 +90,11 @@ public class se3ops
                     Matrix mat=new Matrix(m);
                     mat = Matrix.scalarMulti(theta, mat);
 
-                    log += "theta=" + theta;
+                    log += "theta="+ el + theta + el;
                     se3alg = new se3algebra(mat);
 
 
-                    log += "se3g=" + se3alg.matrix.toString();
+                    log += "se3alg="+ el + se3alg.matrix.toString();
                     MainActivity.appendLog(log, verbose);
                     return se3alg;
                 }
@@ -112,7 +113,7 @@ public class se3ops
 
                     se3alg = new se3algebra(se3algmat);
 
-                    log += "matrixlog6_res=" + se3alg.matrix.toString();
+                    log += "matrixlog6_res="+ el + se3alg.matrix.toString();
                     MainActivity.appendLog(log, verbose);
                     return se3alg;
                 }

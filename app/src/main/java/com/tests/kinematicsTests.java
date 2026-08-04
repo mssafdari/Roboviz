@@ -13,6 +13,7 @@ import java.io.StringWriter;
 import java.io.PrintWriter;
 import com.roboviz.MainActivity;
 import android.media.FaceDetector;
+import com.math.se3ops;
 
 public class kinematicsTests extends BaseTest
 {
@@ -143,7 +144,7 @@ public class kinematicsTests extends BaseTest
 			double[][] thetaL=new double[][]{{0},{0},{Math.PI / 2}};
 			Vector thetaList=new Vector(thetaL);
 			errorReport+="before fk\n";
-            se3group ee= forwardKinematics.FKinBody(M, Blist, thetaList,true);
+            se3group ee= forwardKinematics.FKinBody(M, Blist, thetaList,false);
 			errorReport+="after fk\n"+ee.matrix.toString()+el;
             se3group answer=new se3group(new Matrix(ans));
 			errorReport+=answer.matrix.toString();
@@ -186,8 +187,6 @@ public class kinematicsTests extends BaseTest
     {
         try
         {
-            //MainActivity.clearLog();
-            MainActivity.doLog=true;
 			initFK_IK();
 
 			ArrayList<se3algebra> Blist=new ArrayList<se3algebra>();
@@ -197,16 +196,23 @@ public class kinematicsTests extends BaseTest
 			Blist.add(new se3algebra(new Vector6(se3group.adjoint(Minv).multiply(se3algebra.se3ToVec(se2)))));
 			Blist.add(new se3algebra(new Vector6(se3group.adjoint(Minv).multiply(se3algebra.se3ToVec(se3)))));
             for(int i=0;i<Blist.size();i++){
-             errorReport+="b("+i+")"+Blist.get(i).matrix.toString()+el;
+             MainActivity.appendLog("b("+i+")"+Blist.get(i).matrix.toString()+el,true);
              }
 			double[][] thetaL=new double[][]{{0},{0},{Math.PI / 2}};
 			Vector thetaList=new Vector(thetaL);
-            se3group ee= forwardKinematics.FKinBody(M, Blist, thetaList,true);
-			errorReport+="before ik body"+el+ee.matrix.toString()+el;
-			Vector thetaListInv=inversekinematics.IKinBody(Blist,M,ee,new Vector(new double[][]{{.1},{.1},{.1}}),true);
+            se3group ee= forwardKinematics.FKinBody(M, Blist, thetaList,false);
+			MainActivity.appendLog("before ik body"+el+ee.matrix.toString()+el,true);
+			Vector thetaListInv=inversekinematics.IKinBody(Blist,M,ee,new Vector(new Vector3(0,0,0).getData()),true);
 			//errorReport+=thetaListInv.thetaList.toString()+el+thetaListInv.success+el;
-			errorReport+="fk_ik="+el+forwardKinematics.FKinBody(M,Blist,thetaListInv,false).matrix.toString()+el;
+			MainActivity.appendLog("fk_with_thetas0fIk="+el+forwardKinematics.FKinBody(M,Blist,thetaListInv,false).matrix.toString()+el,true);
             //MainActivity.doLog=false;
+            
+            se3group T_final = forwardKinematics.FKinBody(M, Blist, thetaListInv, false);
+            se3group X = new se3group(T_final.matrix.inverse().multiply(ee.matrix));
+            se3algebra logX = se3ops.matrixLog6(X, false);
+            double error = se3algebra.se3ToVec(logX).norm();
+            MainActivity.appendLog( "Final error: " + error + el,true);
+            
 			return thetaListInv.isEqual(thetaList);
         }
         catch (Exception e)
@@ -219,6 +225,7 @@ public class kinematicsTests extends BaseTest
             errorReport += "Exception: " + e.getMessage() + " from IKBody\n";
             errorReport += "Stack trace:\n" + stackTrace + "\n";
         }
+        
         //MainActivity.doLog=false;
         return false;
     }
@@ -236,10 +243,10 @@ public class kinematicsTests extends BaseTest
 			se3group M=new se3group(new Matrix(m));
 			Vector thetaList=new Vector(thetaL);
             se3group ee= forwardKinematics.FKinSpace(M, Slist, thetaList,false);
-			errorReport+="before ik space"+el+ee.matrix.toString()+el;
+			MainActivity.appendLog("before ik space"+el+ee.matrix.toString()+el,true);
             Vector thetaListInv=inversekinematics.IKinSpace(Slist,M,ee,new Vector(new double[][]{{.1},{.1},{.1}}),true);
-			errorReport+=thetaListInv.toString()+el;
-			errorReport+="fk_ik="+el+forwardKinematics.FKinBody(M,Slist,thetaListInv,false).matrix.toString()+el;
+			MainActivity.appendLog(thetaListInv.toString()+el,true);
+			MainActivity.appendLog("fk_ik="+el+forwardKinematics.FKinBody(M,Slist,thetaListInv,false).matrix.toString()+el,true);
 			return thetaListInv.isEqual(thetaList);
         }
         catch (Exception e)

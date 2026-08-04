@@ -6,11 +6,13 @@ import com.math.se3group;
 import com.math.se3algebra;
 import com.math.se3ops;
 import com.math.Vector;
+import com.roboviz.MainActivity;
 
 public class jacobianBuilder
 {
 	public static ArrayList<Vector6> JacobianBody(ArrayList<se3algebra> Blist, Vector thetaList,Boolean verbose)
 	{
+        MainActivity.appendLog("{{entering jacobian body}}",verbose);
 		if (thetaList.getCols() != 1)
 		{
 			throw new IllegalArgumentException("thetalist should be vector");
@@ -36,12 +38,13 @@ public class jacobianBuilder
 			T.matrix = T.matrix.multiply(expB.matrix);
 			//               ↑ RIGHT multiply
 		}
-
+        MainActivity.appendLog("{{exiting jacobian body}}",verbose);
 		return jacobianData;
 	}
 
 	public static ArrayList<Vector6> JacobianSpace(ArrayList<se3algebra> Slist, Vector thetaList,Boolean verbose)
 	{
+        MainActivity.appendLog("{{entering jacobian space}}",verbose);
 		if (thetaList.getCols() != 1)
 		{
 			throw new IllegalArgumentException("thetalist should be vector");
@@ -53,6 +56,7 @@ public class jacobianBuilder
 			jacobianData.add(new Vector6(se3group.adjoint(se3g).multiply(se3algebra.se3ToVec(Slist.get(i)))));
 			se3g.matrix = se3g.matrix.multiply(se3ops.matrixExp6(new se3algebra(Matrix.scalarMulti(thetaList.get(i), Slist.get(i).matrix)),verbose).matrix);
 		}
+        MainActivity.appendLog("{{entering jacobian body}}",verbose);
 		return jacobianData;
 	}
 }

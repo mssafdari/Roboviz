@@ -20,6 +20,9 @@ public class se3ops
                     log += "input matrix="+ el + se3alg.matrix.toString() + "\n";
                     Vector6 V = se3algebra.se3ToVec(se3alg);
                     axis6theta at =Vector6.axisAng6(V);
+                    if (at.theta < 1e-6 && at.axis.omega.norm() < 1e-6 && at.axis.velocity.norm() < 1e-6) {
+                        return new se3group(Matrix.identity(4)); // Zero screw: no motion
+                    }
                     Vector3 omg = at.axis.omega;
                     Vector3 vel = at.axis.velocity;
                     so3algebra omeg = so3algebra.vecToSo3(omg);
@@ -83,6 +86,9 @@ public class se3ops
                     log += "rotation is identity in ML6\n";
                     so3algebra omega = so3algebra.vecToSo3(new Vector3());
                     double theta = vel.norm();
+                    if (Math.abs(theta) < 1e-6) {
+                        theta = 1e-6;
+                    }
                     vel = vel.normalize();
                     double[][] m=new double[4][4];
                     Matrix.setSubMatrix(m, 0, 0, omega.matrix.data);
@@ -104,6 +110,9 @@ public class se3ops
                     so3algebra so3alg = so3ops.matrixLog3((new so3group(se3g.matrix.getSubMatrix(0, 0, 3, 3))), false);
                     axis3theta a3t = Vector3.axisAng3(so3algebra.so3ToVec(so3alg));
                     log += "theta" + a3t.theta + "\n";
+                    if (Math.abs(a3t.theta) < 1e-6) {
+                        a3t.theta = 1e-6;
+                    }
                     Matrix part1 =Matrix.scalarMulti(1.0 / a3t.theta, Matrix.identity(3));
                     Matrix ssOmg =so3algebra.vecToSo3(a3t.axis).matrix;
                     Matrix part2 = Matrix.scalarMulti(-.5, ssOmg);

@@ -77,14 +77,13 @@ public class Vector extends Matrix {
 		}
 	}
 
-    public static Vector scalarMulti(double scale,Vector org){
-		Vector vec = new Vector(org.getRows());
-		for (int j=0;j < org.rows;j++)
-		{
-				vec.data[j][0] *= scale;
-		}
-		return vec;
-	}
+    public static Vector scalarMulti(double scale, Vector org) {
+        Vector vec = new Vector(org.getRows());
+        for (int j = 0; j < org.rows; j++) {
+            vec.data[j][0] = org.data[j][0] * scale;  // ← Use assignment, not multiplication
+        }
+        return vec;
+    }
 
     // Static factory methods
     public static Vector zeros(int size) {

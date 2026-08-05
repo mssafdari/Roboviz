@@ -365,6 +365,32 @@ public class Matrix
         return Matrix.fromRealMatrix(pinv);
     }
     
+    public Matrix dampedPseudoInverse(double lambda) {
+        RealMatrix A = this.toRealMatrix();
+        SingularValueDecomposition svd = new SingularValueDecomposition(A);
+        RealMatrix U = svd.getU();
+        RealMatrix S = svd.getS();
+        RealMatrix V = svd.getV();
+
+        int m = S.getRowDimension();
+        int n = S.getColumnDimension();
+        double[][] sData = S.getData();
+
+        // Apply damping to singular values
+        for (int i = 0; i < Math.min(m, n); i++) {
+            double sigma = sData[i][i];
+            if (sigma > 1e-10) {
+                sData[i][i] = sigma / (sigma * sigma + lambda * lambda);
+            } else {
+                sData[i][i] = 0;
+            }
+        }
+
+        RealMatrix S_damped = new Array2DRowRealMatrix(sData);
+        RealMatrix pinv = V.multiply(S_damped.transpose()).multiply(U.transpose());
+        return Matrix.fromRealMatrix(pinv);
+    }
+    
     public Matrix inverse()
 	{
 		if (!isSquare())

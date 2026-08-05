@@ -47,7 +47,7 @@ public class Vector6 extends Vector {
 		return axis;
 	}
 	
-	public static axis6theta axisAng6(Vector6 expc6){
+	/*public static axis6theta axisAng6(Vector6 expc6){
 		axis6theta at=new axis6theta();
 		at.theta =expc6.omega.norm();
 		if(at.theta==0){
@@ -60,7 +60,45 @@ public class Vector6 extends Vector {
 															 expc6.velocity.y/at.theta,expc6.velocity.z/at.theta));
 		}
 		return at;
-	}
+	}*/
+    public static axis6theta axisAng6(Vector6 expc6) {
+        axis6theta at = new axis6theta();
+        double omegaNorm = expc6.omega.norm();
+        double velNorm = expc6.velocity.norm();
+
+        // Case 1: Pure translation (omegaNorm = 0)
+        if (omegaNorm < 1e-6) {
+            if (velNorm < 1e-6) {
+                // Both omega and velocity are zero: invalid screw axis
+                at.theta = 0;
+                at.axis = new Vector6(new Vector3(0, 0, 0), new Vector3(0, 0, 0));
+                return at;
+            }
+            at.theta = velNorm;
+            at.axis = new Vector6(
+                new Vector3(0, 0, 0),
+                new Vector3(
+                    expc6.velocity.x / velNorm,
+                    expc6.velocity.y / velNorm,
+                    expc6.velocity.z / velNorm
+                )
+            );
+        }
+        // Case 2: General case (omegaNorm > 0)
+        else {
+            at.theta = omegaNorm;
+            at.axis = new Vector6(
+                expc6.omega.normalize(),
+                new Vector3(
+                    expc6.velocity.x / omegaNorm,
+                    expc6.velocity.y / omegaNorm,
+                    expc6.velocity.z / omegaNorm
+                )
+            );
+        }
+        return at;
+    }
+    
 	public static Vector6 getColumnAsVec6(double[][] data,int col){
 		if(data.length!=6){
 			throw new IllegalArgumentException("rows must be 6");

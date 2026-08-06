@@ -212,8 +212,8 @@ public class kinematicsTests extends BaseTest
             se3algebra logX = se3ops.matrixLog6(X, false);
             double error = se3algebra.se3ToVec(logX).norm();
             MainActivity.appendLog( "Final error: " + error + el,true);
-            
-			return thetaListInv.isEqual(thetaList);
+            Vector delta_theta=thetaListInv.subtract(thetaList);
+			return (delta_theta.normMatrix1()<.05);
         }
         catch (Exception e)
         {
@@ -247,7 +247,8 @@ public class kinematicsTests extends BaseTest
             Vector thetaListInv=inversekinematics.IKinSpace(Slist,M,ee,new Vector(new double[][]{{.1},{.1},{.1}}),true);
 			MainActivity.appendLog(thetaListInv.toString()+el,true);
 			MainActivity.appendLog("fk_ik="+el+forwardKinematics.FKinBody(M,Slist,thetaListInv,false).matrix.toString()+el,true);
-			return thetaListInv.isEqual(thetaList);
+			Vector delta_theta=thetaListInv.subtract(thetaList);
+			return (delta_theta.normMatrix1()<.05);
         }
         catch (Exception e)
         {

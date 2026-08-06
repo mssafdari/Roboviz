@@ -26,6 +26,7 @@ public class inversekinematics
 	{
         MainActivity.appendTitle("==entering IKbody==", verbose);
         log = "";
+        double lambda = 0.01; // Damping factor
 		int iteration=0;
 		ArrayList<Vector6> jb;
 		Vector3 Wb= new Vector3();
@@ -36,11 +37,15 @@ public class inversekinematics
 		se3algebra bodyse3alg;
         se3algebra se3alg=new se3algebra(Matrix.zeros(4, 4));
 		thetaList = thetaList0;
+        verbose=false;
         try
         {
             log += thetaList.toString() + el;
 
             do{
+                if(iteration==7){
+                    verbose=true;
+                    }
                 MainActivity.appendTitle("iteration((" + iteration + "))", verbose);
                 jb = jacobianBuilder.JacobianBody(Blist, thetaList, verbose);
                 Tsb = forwardKinematics.FKinBody(M, Blist, thetaList, verbose);
@@ -52,21 +57,33 @@ public class inversekinematics
                 bodyse3alg = se3alg;
                 MainActivity.appendTitle(el + "bodyse3alg=" + el + bodyse3alg.matrix.toString() + el,verbose);
 
+                for(int i=0;i<jb.size();i++){
+                    MainActivity.appendLog("j("+i+")="+el+ jb.get(i).toString()+el,verbose);
+                }
+                
                 jbody = ArrayListToMatrix(jb);
+                MainActivity.appendLog("jbody="+el+jbody.toString()+el,verbose);
                 //thetaList = thetaList.add(jbody.pseudoInverse().multiply(se3algebra.se3ToVec(bodyse3alg)));
                 // Use damping for numerical stability
                // double alpha = 0.9; // Start with 0.3
                 
                // Vector delta = jbody.pseudoInverse().multiply(se3algebra.se3ToVec(bodyse3alg));
                 
-                double lambda = 0.1; // Damping factor
+                
                 Matrix jbodyDamped = jbody.dampedPseudoInverse(lambda);
-                thetaList = thetaList.add(jbodyDamped.multiply(se3algebra.se3ToVec(bodyse3alg)));
+                Vector delta=jbodyDamped.multiply(se3algebra.se3ToVec(bodyse3alg));
+                MainActivity.appendLog("thetalist="+el+thetaList.toString()+el,verbose);
+                
+                MainActivity.appendLog("delta="+el+delta+el,verbose);
+                thetaList = thetaList.add(delta);
                // thetaList = thetaList.add(Vector.scalarMulti(alpha,  delta));
-
-               
+                MainActivity.appendLog("new ThetaList="+el+thetaList.toString()+el,verbose);
+                
+                
                 Wb = bodyse3alg.getOmega();
                 Vb = bodyse3alg.getVelocity();
+                MainActivity.appendLog("Wb.norm="+el+Wb.norm()+el,verbose);
+                MainActivity.appendLog("Vb.norm="+el+Vb.norm()+el,verbose);
                 iteration++;
             }while((Wb.norm() > eomg || Vb.norm() > ev) && iteration < maxIterations);
             
@@ -107,11 +124,15 @@ public class inversekinematics
 		Matrix jSpace;
 		thetaList = thetaList0;
 		log += thetaList.toString()+el;
+        verbose=false;
 		do{
+            if(iteration==7){
+                verbose=true;
+            }
             MainActivity.appendTitle("iteration((" + iteration + "))", verbose);
 			js = jacobianBuilder.JacobianSpace(Slist, thetaList, false);
 			Tsb = forwardKinematics.FKinSpace(M, Slist, thetaList, false);
-			X = new se3group(Tsb.matrix.inverse().multiply(T.matrix));
+			X = new se3group(Tsb.matrix.pseudoInverse().multiply(T.matrix));
 			bodyse3alg = se3ops.matrixLog6(X, true);
 			spacese3alg = se3algebra.vecToSe3(new Vector6(se3group.adjoint(Tsb).multiply(se3algebra.se3ToVec(bodyse3alg))));
 			jSpace = ArrayListToMatrix(js);

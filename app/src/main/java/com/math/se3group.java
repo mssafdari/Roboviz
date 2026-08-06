@@ -10,16 +10,24 @@ public class se3group
 		matrix=mat;
 	}
 	
-	public static boolean isTransformation(Matrix m)
-	{
-		so3group R =new so3group( m.getSubMatrix(0,0,3,3));
-		if(so3group.isRotation(R.matrix)){
-			if(m.getSubMatrix(3,0,1,4).isEqual(Matrix.identity(4).getSubMatrix(3,0,1,4))){
-				return true;
-			}
-		}
-		return false;
-	}
+	public static boolean isTransformation(Matrix mat) {
+        // Check bottom row is [0, 0, 0, 1] with tolerance
+        for (int i = 0; i < 3; i++) {
+            if (Math.abs(mat.get(3, i)) > 1e-6) return false;
+        }
+        if (Math.abs(mat.get(3, 3) - 1.0) > 1e-6) return false;
+
+        // Check rotation part is orthogonal with tolerance
+        Matrix R = mat.getSubMatrix(0, 0, 3, 3);
+        Matrix RtR = R.transpose().multiply(R);
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                double expected = (i == j) ? 1.0 : 0.0;
+                if (Math.abs(RtR.get(i, j) - expected) > 1e-6) return false;
+            }
+        }
+        return true;
+    }
 	
 	public static Matrix adjoint(se3group T){
 		rotPos Rp = transToRp(T);

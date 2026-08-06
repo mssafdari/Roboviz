@@ -39,43 +39,31 @@ public class Vector extends Matrix {
     }
 
     // Override operations to return Vector when possible
-    public  Vector add(Vector other)
-	{
-		Vector added= new Vector(this.getRows());
-		if (this.hasSameDimensions(other))
-		{
-			for (int i=0;i < this.rows;i++)
-			{
-					added.data[i][0] += other.data[i][0];
-			}
-			return added;
-		}
-		else
-		{
-			throw new IllegalArgumentException(
-				"Matrices must have the same dimensions."
-			);
-		}
-	}
+    public Vector add(Vector other) {
+        Vector added = new Vector(this.getRows());
+        if (this.hasSameDimensions(other)) {
+            for (int i = 0; i < this.rows; i++) {
+                added.data[i][0] = this.data[i][0] + other.data[i][0];  // ← Add BOTH!
+            }
+            return added;
+        }
+        else {
+            throw new IllegalArgumentException("Matrices must have the same dimensions.");
+        }
+    }
 
-    public  Vector subtract(Vector other)
-	{
-		Vector added= new Vector(this.getRows());
-		if (this.hasSameDimensions(other))
-		{
-			for (int i=0;i < this.rows;i++)
-			{
-				added.data[i][0] -= other.data[i][0];
-			}
-			return added;
-		}
-		else
-		{
-			throw new IllegalArgumentException(
-				"Matrices must have the same dimensions."
-			);
-		}
-	}
+    public Vector subtract(Vector other) {
+        Vector added = new Vector(this.getRows());
+        if (this.hasSameDimensions(other)) {
+            for (int i = 0; i < this.rows; i++) {
+                added.data[i][0] = this.data[i][0] - other.data[i][0];  // ← Fix this too!
+            }
+            return added;
+        }
+        else {
+            throw new IllegalArgumentException("Matrices must have the same dimensions.");
+        }
+    }
 
     public static Vector scalarMulti(double scale, Vector org) {
         Vector vec = new Vector(org.getRows());

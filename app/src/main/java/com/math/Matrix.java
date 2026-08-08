@@ -2,6 +2,8 @@ package com.math;
 import java.util.Locale;
 import android.net.wifi.aware.PublishConfig;
 import org.apache.commons.math3.linear.*;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 
 public class Matrix
 {
@@ -11,14 +13,31 @@ public class Matrix
 
 	public Matrix(double[][] Data)
 	{
-		this.rows = Data.length;
-		this.cols = Data[0].length;
-		this.data = new double[this.rows][this.cols];
+        try{
+            if (Data == null || Data.length == 0 || Data[0] == null || Data[0].length == 0) {
+                throw new IllegalArgumentException("Matrix data cannot be null or empty");
+            }
+            this.rows = Data.length;
+            this.cols = Data[0].length;
+            this.data = new double[this.rows][this.cols];
 
-		for (int i = 0; i < rows; i++)
-		{
-			System.arraycopy(Data[i], 0, this.data[i], 0, cols);
-		}
+            for (int i = 0; i < rows; i++)
+            {
+                System.arraycopy(Data[i], 0, this.data[i], 0, cols);
+            }
+        }
+        catch (Exception e)
+        { 
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            String stackTrace = sw.toString();
+            String log;
+            log = "Exception: " + e.getMessage() + " from matric ctor\n";
+            log += "Stack trace:\n" + stackTrace + "\n";
+            throw new RuntimeException(log);
+        }
+        
 	}
     public Matrix(int numRows,int numCols){
 		this(Matrix.zeros(numRows,numCols).data);

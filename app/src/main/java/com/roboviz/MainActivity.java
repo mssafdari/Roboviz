@@ -26,6 +26,7 @@ import com.tests.kinematicsTests;
 import java.util.List;
 import android.content.Intent;
 import android.widget.ToggleButton;
+import android.os.strictmode.CleartextNetworkViolation;
 
 public class MainActivity extends Activity
 {
@@ -141,17 +142,28 @@ public class MainActivity extends Activity
 					openRobotControlActivity();
 				}
 			});
-
         try
-		{
-            checkFile();
-            InputStream is = getAssets().open("ur5.urdf.xml");
-            Robot robot = new UrdfParser().parse(is);
-            debug.setText(robot.toDebugString());
+        {
+            // Check if file exists using utility
+            String status = URDFUtils.getURDFFileStatus(this, "ur5.urdf.xml");
+            appendLog(status, true);
+
+            // Load robot using utility
+            Robot robot = URDFUtils.loadDefaultRobot(this);
+            if (robot != null) {
+                //debug.setText(robot.robot_init());
+                String txt= robot.robot_init();
+                clearLog();
+                appendLog(txt,true);
+            } else {
+                debug.setText("Failed to load robot\n" + URDFUtils.getAvailableURDFFilesString(this));
+            }
+            updateLogDisplay();
         }
-		catch (Exception e)
-		{
-            debug.setText(e.getMessage());
+        catch (Exception e)
+        {
+            appendLog("Error: " + e.getMessage() + "\n" + URDFUtils.getAvailableURDFFilesString(this),true);
+            updateLogDisplay();
         }
     }
 
@@ -163,7 +175,7 @@ public class MainActivity extends Activity
             // Parse URDF and get joints
             InputStream is = getAssets().open("ur5.urdf.xml");
             Robot robot = new UrdfParser().parse(is);
-            List<Joint> joints = getJointsFromRobot(robot);
+            List<Joint> joints = robot.joints;
 
             if (joints == null || joints.isEmpty())
             {
@@ -186,36 +198,6 @@ public class MainActivity extends Activity
         }
     }
 
-    // ✅ Helper method to extract joints from Robot object
-    private List<Joint> getJointsFromRobot(Robot robot)
-    {
-        List<Joint> joints = new ArrayList<>();
-
-        // This depends on your Robot class structure
-        // Example: if Robot has a getJoints() method
-        // return robot.getJoints();
-
-        // OR if you need to manually extract:
-        // for (JointObject jo : robot.getJointObjects()) {
-        //     joints.add(new Joint(jo.getName(), 
-        //                         jo.getDefaultPosition(),
-        //                         jo.getMinPosition(),
-        //                         jo.getMaxPosition(),
-        //                         jo.getType()));
-        // }
-
-        // For now, return sample joints if parsing fails
-        // (Replace this with actual extraction from your Robot class)
-        joints.add(new Joint("shoulder_pan", 0.0, -3.14, 3.14, "revolute"));
-        joints.add(new Joint("shoulder_lift", 0.5, -2.5, 2.5, "revolute"));
-        joints.add(new Joint("elbow", -0.3, -2.0, 2.0, "revolute"));
-        joints.add(new Joint("wrist_1", 1.2, -1.5, 1.5, "revolute"));
-        joints.add(new Joint("wrist_2", -0.8, -1.5, 1.5, "revolute"));
-        joints.add(new Joint("wrist_3", 0.2, -3.14, 3.14, "revolute"));
-
-        return joints;
-    }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
 	{
@@ -231,34 +213,6 @@ public class MainActivity extends Activity
             }
         }
     }
-    private void checkFile()
-	{
-        try
-		{
-            // First check if file exists in assets
-            String[] files = getAssets().list("");
-            boolean fileFound = false;
-            for (String file : files)
-			{
-                if (file.equals("ur5.urdf.xml"))
-				{
-                    fileFound = true;
-                    break;
-                }
-            }
-
-            if (!fileFound)
-			{
-                debug.setText("File not found in assets! Available files: " + Arrays.toString(files));
-                return;
-            }
-        }
-		catch (Exception e)
-		{
-            debug.setText(e.getMessage());
-        }
-    }
-
 
     // Public static log variable - accessible from anywhere
     public static String debugLog = "";

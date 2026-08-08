@@ -6,14 +6,29 @@
     android:padding="16dp">
 
     <!-- 3D View (placeholder for your robot visualization) -->
-    <FrameLayout
-        android:id="@+id/robot_view_container"
+    <com.visualisation.RobotCanvasView
+        android:id="@+id/robot_canvas"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:background="#f0f0f0" />
+        android:layout_height="400dp"
+        android:layout_marginBottom="16dp"
+        android:background="#F5F5F5" />
 
     <!-- Scrollable sliders container -->
+        <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight=".2"
+        android:fillViewport="true"
+        android:scrollbars="vertical">
+
+        <TextView
+            android:id="@+id/myText"
+            android:text="@string/hello_world"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"/>
+    </ScrollView>
+   
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -34,7 +49,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="8dp" />
-
     </ScrollView>
 
     <!-- Control buttons -->
@@ -57,6 +71,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Apply Joint Angles" />
+        
     </LinearLayout>
 
 </LinearLayout>

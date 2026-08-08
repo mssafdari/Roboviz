@@ -101,4 +101,11 @@ public class se3group
         Matrix rot=matrix.getSubMatrix(0,0,3,3);
         return new so3group(rot);
     }
+    
+    public static double getLinkLength(se3group start,se3group end){
+        Vector3 startV=start.getPosition();
+        Vector3 endV=end.getPosition();
+        Vector3 diff=new Vector3(endV.subtract(startV));
+        return diff.norm();
+    }
 }

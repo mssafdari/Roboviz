@@ -8,37 +8,31 @@ import android.app.Activity;
 import android.view.View;
 import android.view.LayoutInflater;
 import android.content.Intent;
+import com.visualisation.RobotCanvasView;
 
 // RobotControlActivity.java
 public class RobotControlActivity extends Activity
 {
+    private String log="";
+    private TextView debug;
+    private RobotCanvasView canvasView; 
     private LinearLayout slidersContainer;
     private List<Joint> joints = new ArrayList<>();
     private Map<String, SeekBar> sliderMap = new HashMap<>();
     private Map<String, TextView> valueMap = new HashMap<>();
+    
+    private Robot robot;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
 	{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.robot_view);
+        debug = findViewById(R.id.myText);
+        canvasView = findViewById(R.id.robot_canvas); 
 
         slidersContainer = findViewById(R.id.sliders_container);
-        // Load and parse URDF
-		// ✅ STEP 1: Receive joints from Intent
-        receiveJointsFromIntent();
-
-        // ✅ STEP 2: Create sliders from received joints
-        if (joints != null && !joints.isEmpty())
-        {
-            createJointSliders();
-        }
-        else
-        {
-            // If no joints received, use sample joints
-            addSampleJoints();
-        }
-
+        
         // Setup buttons
         findViewById(R.id.btn_reset).setOnClickListener(new View.OnClickListener() {
 				@Override
@@ -55,30 +49,29 @@ public class RobotControlActivity extends Activity
 					applyJointAngles(v);
 				}
 			});
-    }
-
-	// In RobotControlActivity - Receiving data
-    private void receiveJointsFromIntent()
-    {
-        Intent intent = getIntent();
-
-        if (intent != null && intent.hasExtra("joints"))
+        try
         {
-            // ✅ Use getParcelableArrayListExtra
-            ArrayList<Joint> receivedJoints = intent.getParcelableArrayListExtra("joints");
-            if (receivedJoints != null)
-            {
-                joints = receivedJoints;
-                Toast.makeText(this, "Received " + joints.size() + " joints", Toast.LENGTH_SHORT).show();
+            // Check if file exists using utility
+            String status = URDFUtils.getURDFFileStatus(this, "ur5.urdf.xml");
+            log+=status;
+
+            // Load robot using utility
+            robot = URDFUtils.loadDefaultRobot(this);
+            robot.robot_init();
+            if (robot != null) {
+                //debug.setText(robot.toDebugString()+"\n"+log+"\n");
+                joints=robot.joints;
+                createJointSliders();
+            } else {
+                //debug.setText("Failed to load robot\n" + URDFUtils.getAvailableURDFFilesString(this));
             }
+            
         }
-        else
+        catch (Exception e)
         {
-            Toast.makeText(this, "No joint data received", Toast.LENGTH_SHORT).show();
-            addSampleJoints();
+            debug.setText("Error: " + e.getMessage() + "\n" + URDFUtils.getAvailableURDFFilesString(this));
         }
     }
-
 	private void resetToDefault(View v)
     {
         for (Joint joint : joints)
@@ -198,46 +191,6 @@ public class RobotControlActivity extends Activity
         return (int) (((value - min) / (max - min)) * 1000);
     }
 
-    private void resetToDefault()
-	{
-        for (Joint joint : joints)
-		{
-            SeekBar slider = sliderMap.get(joint.name);
-            TextView valueView = valueMap.get(joint.name);
-
-            if (slider != null)
-			{
-                int progress = mapValueToProgress(joint.getDefaultPosition(), 
-												  joint.getMinPosition(), 
-												  joint.getMaxPosition());
-                slider.setProgress(progress);
-
-                joint.setCurrentPosition(joint.getDefaultPosition());
-                double deg = Math.toDegrees(joint.getDefaultPosition());
-                valueView.setText(String.format("%.2f°", deg));
-            }
-        }
-
-        // Update robot visualization
-        updateRobot();
-    }
-
-    private void applyJointAngles()
-	{
-        // Get all current joint angles
-        double[] thetaList = new double[joints.size()];
-        for (int i = 0; i < joints.size(); i++)
-		{
-            thetaList[i] = joints.get(i).getCurrentPosition();
-        }
-
-        // Here you would update your robot model
-        // For example, pass to your IK solver or 3D viewer
-        updateRobotWithJoints(thetaList);
-
-        Toast.makeText(this, "Applied joint angles to robot", Toast.LENGTH_SHORT).show();
-    }
-
     private void updateRobot()
 	{
         // Update 3D visualization with current joint angles
@@ -255,15 +208,5 @@ public class RobotControlActivity extends Activity
             // Update your 3D model here
             //Log.d("RobotControl", "Joint: " + jointName + " -> " + Math.toDegrees(angle) + "°");
         }
-    }
-
-    private void addSampleJoints()
-	{
-        // For testing when no URDF is available
-        joints.add(new Joint("joint1", 0.0, -3.14, 3.14, "revolute"));
-        joints.add(new Joint("joint2", 0.5, -2.0, 2.0, "revolute"));
-        joints.add(new Joint("joint3", -0.3, -1.5, 1.5, "revolute"));
-        joints.add(new Joint("joint4", 0.0, -0.5, 0.5, "prismatic"));
-        createJointSliders();
     }
 }

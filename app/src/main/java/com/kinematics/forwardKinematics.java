@@ -21,6 +21,7 @@ public class forwardKinematics
         MainActivity.appendLog("{{exiting Fk-body}}",verbose);
         return endEffectorT;
     }
+    
     public static se3group FKinSpace(se3group M,ArrayList<se3algebra> Slist, Vector thetaList,Boolean verbose)
 	{
         MainActivity.appendLog("{{entering Fk-space}}",verbose);

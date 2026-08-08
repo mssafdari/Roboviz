@@ -2,6 +2,8 @@ package com.roboviz;
 import android.os.Parcel;
 import android.os.Parcelable;
 import java.io.Serializable;
+import com.math.Vector3;
+import android.net.wifi.aware.PublishDiscoverySession;
 
 public class Joint implements Parcelable{
 
@@ -21,6 +23,8 @@ public class Joint implements Parcelable{
     private double minPosition;
     private double maxPosition;
     private double currentPosition;
+    
+    public Vector3 location;
 	
 	public Joint(){
 		this.axis = new Axis(0,0,1);
@@ -44,6 +48,13 @@ public class Joint implements Parcelable{
         maxPosition = in.readDouble();
         currentPosition = in.readDouble();
         type = in.readString();
+    }
+    
+    public void reset(){
+        currentPosition=defaultPosition;
+    }
+    public double getPos(){
+        return currentPosition;
     }
     
     @Override

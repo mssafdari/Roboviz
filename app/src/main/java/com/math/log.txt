@@ -1,32 +1,296 @@
-do {
-    // ... existing code ...
-    
-    jbody = ArrayListToMatrix(jb);
-    
-    // Use damping for numerical stability
-    double alpha = 0.3; // Start with 0.3
-    Vector delta = jbody.pseudoInverse().multiply(se3algebra.se3ToVec(bodyse3alg));
-    thetaList = thetaList.add(delta.scalarMult(alpha));
-    
-    // Check if we're making progress
-    se3group newTsb = forwardKinematics.FKinBody(M, Blist, thetaList, verbose);
-    se3group newX = new se3group(newTsb.matrix.pseudoInverse().multiply(T.matrix));
-    se3algebra newLog = se3ops.matrixLog6(newX, false);
-    Vector6 newTwist = se3algebra.se3ToVec(newLog);
-    double newError = newTwist.norm();
-    double oldError = se3algebra.se3ToVec(bodyse3alg).norm();
-    
-    // If error increased, reduce step size
-    if (newError > oldError) {
-        alpha *= 0.5;
-        thetaList = thetaList.add(delta.scalarMult(alpha));
-        log += "Reduced step size to: " + alpha + "\n";
-    }
-    
-    Wb = bodyse3alg.getOmega();
-    Vb = bodyse3alg.getVelocity();
-    iteration++;
-    
-    log += "iteration=" + iteration + ", error=" + newError + "\n";
-    
-} while ((Wb.norm() > eomg || Vb.norm() > ev) && iteration < maxIterations);
+Error: error in build m0i array
+Mim1i(0,1) =[ 1.0000  0.0000  0.0000  0.0000 ]
+[ 0.0000  1.0000  0.0000  0.0000 ]
+[ 0.0000  0.0000  1.0000  0.0000 ]
+[ 0.0000  0.0000  0.0000  1.0000 ]
+M0,i(0,0) =[ 1.0000  0.0000  0.0000  0.0000 ]
+[ 0.0000  1.0000  0.0000  0.0000 ]
+[ 0.0000  0.0000  1.0000  0.0000 ]
+[ 0.0000  0.0000  0.0000  1.0000 ]
+Mim1i(1,2) =[ 1.0000  0.0000  0.0000  0.0000 ]
+[ 0.0000  1.0000  0.0000  0.0000 ]
+[ 0.0000  0.0000  1.0000  0.0892 ]
+[ 0.0000  0.0000  0.0000  1.0000 ]
+M0,i(0,1) =[ 1.0000  0.0000  0.0000  0.0000 ]
+[ 0.0000  1.0000  0.0000  0.0000 ]
+[ 0.0000  0.0000  1.0000  0.0892 ]
+[ 0.0000  0.0000  0.0000  1.0000 ]
+Mim1i(2,3) =[ -0.0000   0.0000   1.0000   0.0000 ]
+[  0.0000   1.0000   0.0000   0.1358 ]
+[ -1.0000   0.0000  -0.0000   0.0000 ]
+[  0.0000   0.0000   0.0000   1.0000 ]
+M0,i(0,2) =[ -0.0000   0.0000   1.0000   0.0000 ]
+[  0.0000   1.0000   0.0000   0.1358 ]
+[ -1.0000   0.0000  -0.0000   0.0892 ]
+[  0.0000   0.0000   0.0000   1.0000 ]
+Mim1i(3,4) =[  1.0000   0.0000   0.0000   0.0000 ]
+[  0.0000   1.0000   0.0000  -0.1197 ]
+[  0.0000   0.0000   1.0000   0.4250 ]
+[  0.0000   0.0000   0.0000   1.0000 ]
+M0,i(0,3) =[ -0.0000   0.0000   1.0000   0.4250 ]
+[  0.0000   1.0000   0.0000   0.0161 ]
+[ -1.0000   0.0000  -0.0000   0.0892 ]
+[  0.0000   0.0000   0.0000   1.0000 ]
+Mim1i(4,5) =[ -0.0000   0.0000   1.0000   0.0000 ]
+[  0.0000   1.0000   0.0000   0.0000 ]
+[ -1.0000   0.0000  -0.0000   0.3923 ]
+[  0.0000   0.0000   0.0000   1.0000 ]
+M0,i(0,4) =[ -1.0000   0.0000  -0.0000   0.8173 ]
+[  0.0000   1.0000   0.0000   0.0161 ]
+[  0.0000   0.0000  -1.0000   0.0892 ]
+[  0.0000   0.0000   0.0000   1.0000 ]
+Mim1i(5,6) =[ 1.0000  0.0000  0.0000  0.0000 ]
+[ 0.0000  1.0000  0.0000  0.0930 ]
+[ 0.0000  0.0000  1.0000  0.0000 ]
+[ 0.0000  0.0000  0.0000  1.0000 ]
+M0,i(0,5) =[ -1.0000   0.0000  -0.0000   0.8173 ]
+[  0.0000   1.0000   0.0000   0.1091 ]
+[  0.0000   0.0000  -1.0000   0.0892 ]
+[  0.0000   0.0000   0.0000   1.0000 ]
+Mim1i(6,7) =[ 1.0000  0.0000  0.0000  0.0000 ]
+[ 0.0000  1.0000  0.0000  0.0000 ]
+[ 0.0000  0.0000  1.0000  0.0947 ]
+[ 0.0000  0.0000  0.0000  1.0000 ]
+M0,i(0,6) =[ -1.0000   0.0000  -0.0000   0.8173 ]
+[  0.0000   1.0000   0.0000   0.1091 ]
+[  0.0000   0.0000  -1.0000  -0.0055 ]
+[  0.0000   0.0000   0.0000   1.0000 ]
+Mim1i(7,8) =[ 1.0000  0.0000  0.0000  0.0000 ]
+[ 0.0000  1.0000  0.0000  0.0000 ]
+[ 0.0000  0.0000  1.0000  0.0000 ]
+[ 0.0000  0.0000  0.0000  1.0000 ]
+M0,i(0,7) =[ -1.0000   0.0000  -0.0000   0.8173 ]
+[  0.0000   1.0000   0.0000   0.1091 ]
+[  0.0000   0.0000  -1.0000  -0.0055 ]
+[  0.0000   0.0000   0.0000   1.0000 ]
+M=[ -1.0000   0.0000  -0.0000   0.8173 ]
+[  0.0000   1.0000   0.0000   0.1091 ]
+[  0.0000   0.0000  -1.0000  -0.0055 ]
+[  0.0000   0.0000   0.0000   1.0000 ]
+slist(0)=
+[  0.0000  -1.0000   0.0000   0.0000 ]
+[  1.0000   0.0000  -0.0000  -0.0000 ]
+[ -0.0000   0.0000   0.0000   0.0000 ]
+[  0.0000   0.0000   0.0000   0.0000 ]
+Svec(0)=
+[  0.0000 ]
+[  0.0000 ]
+[  1.0000 ]
+[  0.0000 ]
+[ -0.0000 ]
+[  0.0000 ]
+Blist(0)=
+[  0.0000   1.0000   0.0000   0.1091 ]
+[ -1.0000   0.0000  -0.0000   0.8173 ]
+[ -0.0000   0.0000   0.0000   0.0000 ]
+[  0.0000   0.0000   0.0000   0.0000 ]
+Bvec(0)=
+[  0.0000 ]
+[  0.0000 ]
+[ -1.0000 ]
+[  0.1091 ]
+[  0.8173 ]
+[  0.0000 ]
+slist(1)=
+[  0.0000  -1.0000   0.0000   0.0000 ]
+[  1.0000   0.0000  -0.0000  -0.0000 ]
+[ -0.0000   0.0000   0.0000   0.0000 ]
+[  0.0000   0.0000   0.0000   0.0000 ]
+Svec(1)=
+[  0.0000 ]
+[  0.0000 ]
+[  1.0000 ]
+[  0.0000 ]
+[ -0.0000 ]
+[  0.0000 ]
+Blist(1)=
+[  0.0000   1.0000   0.0000   0.1091 ]
+[ -1.0000   0.0000  -0.0000   0.8173 ]
+[ -0.0000   0.0000   0.0000   0.0000 ]
+[  0.0000   0.0000   0.0000   0.0000 ]
+Bvec(1)=
+[  0.0000 ]
+[  0.0000 ]
+[ -1.0000 ]
+[  0.1091 ]
+[  0.8173 ]
+[  0.0000 ]
+slist(2)=
+[  0.0000  -0.0000   1.0000  -0.0892 ]
+[  0.0000   0.0000  -0.0000  -0.0000 ]
+[ -1.0000   0.0000   0.0000   0.0000 ]
+[  0.0000   0.0000   0.0000   0.0000 ]
+Svec(2)=
+[  0.0000 ]
+[  1.0000 ]
+[  0.0000 ]
+[ -0.0892 ]
+[ -0.0000 ]
+[  0.0000 ]
+Blist(2)=
+[  0.0000  -0.0000   1.0000   0.0946 ]
+[  0.0000   0.0000  -0.0000   0.0000 ]
+[ -1.0000   0.0000   0.0000   0.8173 ]
+[  0.0000   0.0000   0.0000   0.0000 ]
+Bvec(2)=
+[ 0.0000 ]
+[ 1.0000 ]
+[ 0.0000 ]
+[ 0.0946 ]
+[ 0.0000 ]
+[ 0.8173 ]
+slist(3)=
+[  0.0000  -0.0000   1.0000  -0.0892 ]
+[  0.0000   0.0000  -0.0000  -0.0000 ]
+[ -1.0000   0.0000   0.0000   0.4250 ]
+[  0.0000   0.0000   0.0000   0.0000 ]
+Svec(3)=
+[  0.0000 ]
+[  1.0000 ]
+[  0.0000 ]
+[ -0.0892 ]
+[ -0.0000 ]
+[  0.4250 ]
+Blist(3)=
+[  0.0000  -0.0000   1.0000   0.0946 ]
+[  0.0000   0.0000  -0.0000   0.0000 ]
+[ -1.0000   0.0000   0.0000   0.3923 ]
+[  0.0000   0.0000   0.0000   0.0000 ]
+Bvec(3)=
+[ 0.0000 ]
+[ 1.0000 ]
+[ 0.0000 ]
+[ 0.0946 ]
+[ 0.0000 ]
+[ 0.3923 ]
+slist(4)=
+[  0.0000  -0.0000   1.0000  -0.0892 ]
+[  0.0000   0.0000  -0.0000  -0.0000 ]
+[ -1.0000   0.0000   0.0000   0.8173 ]
+[  0.0000   0.0000   0.0000   0.0000 ]
+Svec(4)=
+[  0.0000 ]
+[  1.0000 ]
+[  0.0000 ]
+[ -0.0892 ]
+[ -0.0000 ]
+[  0.8173 ]
+Blist(4)=
+[  0.0000  -0.0000   1.0000   0.0947 ]
+[  0.0000   0.0000  -0.0000   0.0000 ]
+[ -1.0000   0.0000   0.0000   0.0000 ]
+[  0.0000   0.0000   0.0000   0.0000 ]
+Bvec(4)=
+[ 0.0000 ]
+[ 1.0000 ]
+[ 0.0000 ]
+[ 0.0947 ]
+[ 0.0000 ]
+[ 0.0000 ]
+slist(5)=
+[  0.0000   1.0000   0.0000  -0.1091 ]
+[ -1.0000   0.0000   0.0000   0.8173 ]
+[ -0.0000  -0.0000   0.0000   0.0000 ]
+[  0.0000   0.0000   0.0000   0.0000 ]
+Svec(5)=
+[ -0.0000 ]
+[  0.0000 ]
+[ -1.0000 ]
+[ -0.1091 ]
+[  0.8173 ]
+[  0.0000 ]
+Blist(5)=
+[  0.0000  -1.0000   0.0000   0.0000 ]
+[  1.0000   0.0000  -0.0000   0.0000 ]
+[ -0.0000   0.0000   0.0000  -0.0000 ]
+[  0.0000   0.0000   0.0000   0.0000 ]
+Bvec(5)=
+[  0.0000 ]
+[  0.0000 ]
+[  1.0000 ]
+[  0.0000 ]
+[  0.0000 ]
+[ -0.0000 ]
+slist(6)=
+[  0.0000  -0.0000   1.0000   0.0055 ]
+[  0.0000   0.0000  -0.0000  -0.0000 ]
+[ -1.0000   0.0000   0.0000   0.8173 ]
+[  0.0000   0.0000   0.0000   0.0000 ]
+Svec(6)=
+[  0.0000 ]
+[  1.0000 ]
+[  0.0000 ]
+[  0.0055 ]
+[ -0.0000 ]
+[  0.8173 ]
+Blist(6)=
+[  0.0000  -0.0000   1.0000  -0.0000 ]
+[  0.0000   0.0000  -0.0000   0.0000 ]
+[ -1.0000   0.0000   0.0000   0.0000 ]
+[  0.0000   0.0000   0.0000   0.0000 ]
+Bvec(6)=
+[  0.0000 ]
+[  1.0000 ]
+[  0.0000 ]
+[ -0.0000 ]
+[  0.0000 ]
+[  0.0000 ]
+slist(7)=
+[  0.0000   1.0000   0.0000  -0.1091 ]
+[ -1.0000   0.0000   0.0000   0.8173 ]
+[ -0.0000  -0.0000   0.0000   0.0000 ]
+[  0.0000   0.0000   0.0000   0.0000 ]
+Svec(7)=
+[ -0.0000 ]
+[  0.0000 ]
+[ -1.0000 ]
+[ -0.1091 ]
+[  0.8173 ]
+[  0.0000 ]
+Blist(7)=
+[  0.0000  -1.0000   0.0000   0.0000 ]
+[  1.0000   0.0000  -0.0000   0.0000 ]
+[ -0.0000   0.0000   0.0000  -0.0000 ]
+[  0.0000   0.0000   0.0000   0.0000 ]
+Bvec(7)=
+[  0.0000 ]
+[  0.0000 ]
+[  1.0000 ]
+[  0.0000 ]
+[  0.0000 ]
+[ -0.0000 ]
+Exception: length=0; index=0 from IKBody
+Stack trace:
+java.lang.ArrayIndexOutOfBoundsException: length=0; index=0
+    at com.math.Matrix.<init>(Matrix.java:15)
+    at com.math.Matrix.zeros(Matrix.java:745)
+    at com.math.Matrix.<init>(Matrix.java:24)
+    at com.math.Matrix.getSubMatrix(Matrix.java:659)
+    at com.math.Vector.getSubVector(Vector.java:37)
+    at com.roboviz.Robot.calculateJointPositiins(Robot.java:183)
+    at com.roboviz.Robot.buildM0iArray(Robot.java:159)
+    at com.roboviz.Robot.robot_init(Robot.java:83)
+    at com.roboviz.MainActivity.onCreate(MainActivity.java:153)
+    at android.app.Activity.performCreate(Activity.java:9206)
+    at android.app.Activity.performCreate(Activity.java:9162)
+    at android.app.Instrumentation.callActivityOnCreate(Instrumentation.java:1537)
+    at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:4440)
+    at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:4679)
+    at android.app.ActivityThread.handleRelaunchActivityInner(ActivityThread.java:6816)
+    at android.app.ActivityThread.handleRelaunchActivity(ActivityThread.java:6707)
+    at android.app.servertransaction.ActivityRelaunchItem.execute(ActivityRelaunchItem.java:79)
+    at android.app.servertransaction.ActivityTransactionItem.execute(ActivityTransactionItem.java:60)
+    at android.app.servertransaction.TransactionExecutor.executeNonLifecycleItem(TransactionExecutor.java:186)
+    at android.app.servertransaction.TransactionExecutor.executeTransactionItems(TransactionExecutor.java:112)
+    at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:84)
+    at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2921)
+    at android.os.Handler.dispatchMessage(Handler.java:107)
+    at android.os.Looper.loopOnce(Looper.java:249)
+    at android.os.Looper.loop(Looper.java:337)
+    at android.app.ActivityThread.main(ActivityThread.java:9562)
+    at java.lang.reflect.Method.invoke(Native Method)
+    at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:648)
+    at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1005)
+
+
+Available URDF files: [RRR.urdf.xml, attributes_config.xml, power_consumption_cloud_config.xml, puma560.urdf.xml, scara.urdf.xml, ui_service_cloud_config.xml, ur5.urdf.xml]

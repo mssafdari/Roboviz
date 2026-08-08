@@ -17,33 +17,28 @@ public final class R {
         public static final int slider_background=0x7f020002;
     }
     public static final class id {
-        public static final int btn_apply=0x7f070014;
-        public static final int btn_reset=0x7f070013;
-        public static final int goToRobotButton=0x7f07000a;
-        public static final int joint1Slider=0x7f070001;
-        public static final int joint2Slider=0x7f070002;
-        public static final int joint_name=0x7f070004;
-        public static final int joint_range=0x7f070007;
-        public static final int joint_slider=0x7f070006;
-        public static final int joint_value=0x7f070005;
-        public static final int kinematicslabel=0x7f07000f;
-        public static final int myText=0x7f070008;
-        public static final int resetButton=0x7f070003;
-        public static final int robotView=0x7f070000;
-        public static final int robot_view_container=0x7f070011;
-        public static final int se3label=0x7f07000d;
-        public static final int sliders_container=0x7f070012;
-        public static final int so3label=0x7f07000b;
-        public static final int testButton=0x7f070009;
-        public static final int toggleKinematicst=0x7f070010;
-        public static final int toggleSe3t=0x7f07000e;
-        public static final int toggleSo3t=0x7f07000c;
+        public static final int btn_apply=0x7f070010;
+        public static final int btn_reset=0x7f07000f;
+        public static final int goToRobotButton=0x7f070006;
+        public static final int joint_name=0x7f070000;
+        public static final int joint_range=0x7f070003;
+        public static final int joint_slider=0x7f070002;
+        public static final int joint_value=0x7f070001;
+        public static final int kinematicslabel=0x7f07000b;
+        public static final int myText=0x7f070004;
+        public static final int robot_canvas=0x7f07000d;
+        public static final int se3label=0x7f070009;
+        public static final int sliders_container=0x7f07000e;
+        public static final int so3label=0x7f070007;
+        public static final int testButton=0x7f070005;
+        public static final int toggleKinematicst=0x7f07000c;
+        public static final int toggleSe3t=0x7f07000a;
+        public static final int toggleSo3t=0x7f070008;
     }
     public static final class layout {
-        public static final int activiactivity_main=0x7f040000;
-        public static final int item_joint_slider=0x7f040001;
-        public static final int main=0x7f040002;
-        public static final int robot_view=0x7f040003;
+        public static final int item_joint_slider=0x7f040000;
+        public static final int main=0x7f040001;
+        public static final int robot_view=0x7f040002;
     }
     public static final class mipmap {
         public static final int ic_launcher=0x7f030000;

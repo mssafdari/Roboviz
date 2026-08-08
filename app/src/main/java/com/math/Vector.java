@@ -29,6 +29,13 @@ public class Vector extends Matrix {
     public double get(int i) {
         return getData()[i][0];
     }
+    
+    public Vector getSubVector(int i,int j){
+        if(i>j){
+            throw new IllegalArgumentException("i should be less that j");
+        }
+        return new Vector(getSubMatrix(i,0,j-i,1).data);
+    }
 
     public void set(int i, double value) {
         set(i, 0, value);

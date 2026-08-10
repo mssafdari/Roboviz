@@ -20,8 +20,8 @@ public class Joint implements Parcelable{
     public Axis axis;
 	
 	private double defaultPosition;
-    private double minPosition;
-    private double maxPosition;
+    private double minPosition=0;
+    private double maxPosition=Math.PI*2;
     private double currentPosition;
     
     public Vector3 location;

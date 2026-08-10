@@ -156,7 +156,7 @@ public class Robot
                 log += "Bvec(" + i + ")=" + nl + Bvec.toString() + nl;
             }
 			//int j=4/0;
-            calculateJointPositiins(new Vector(M0i.size()));
+            calculateJointPositions(new Vector(M0i.size()));
             for (Joint j:joints)
             {
                 log += nl + "joint location=" + j.name + nl + j.location.toString() + nl;
@@ -175,7 +175,7 @@ public class Robot
 		}
     }
 
-    public void calculateJointPositiins(Vector thetalist)
+    public void calculateJointPositions(Vector thetalist)
     {
         try
         {

@@ -9,6 +9,9 @@ import android.view.View;
 import android.view.LayoutInflater;
 import android.content.Intent;
 import com.visualisation.RobotCanvasView;
+import com.math.se3group;
+import com.math.Matrix;
+import com.math.Vector;
 
 // RobotControlActivity.java
 public class RobotControlActivity extends Activity
@@ -109,25 +112,61 @@ public class RobotControlActivity extends Activity
         }
 
         // Update robot visualization
-        updateRobot();
+        applyJointAngles(v);
     }
 
 	private void applyJointAngles(View v)
     {
-        // Get all current joint angles
+        appendTitle("entering apply joint angles",true);
+        for (Joint joint : joints)
+        {
+            SeekBar slider = sliderMap.get(joint.name);
+            TextView valueView = valueMap.get(joint.name);
+
+            if (slider != null)
+            {
+                int progress = slider.getProgress();
+                double radians = mapProgressToValue(progress, 
+                                                    joint.getMinPosition(), 
+                                                    joint.getMaxPosition());
+
+                joint.setCurrentPosition(radians);
+                double deg = Math.toDegrees(radians);
+                valueView.setText(String.format("%.2f°", deg));
+            }
+        }
+        // 1. Get all current joint angles from the sliders
         double[] thetaList = new double[joints.size()];
         for (int i = 0; i < joints.size(); i++)
         {
             thetaList[i] = joints.get(i).getCurrentPosition();
         }
+        Vector thetaL=new Vector(thetaList);
+        appendLog("thetalist="+EL+thetaL.toString()+EL,true);
+        updateLogDisplay();
+        // 2. Recalculate the new T0i poses based on these angles
+        robot.calculateJointPositions(thetaL);
 
-        // Here you would update your robot model
-        // For example, pass to your IK solver or 3D viewer
-        updateRobotWithJoints(thetaList);
+        // 3. Filter the new poses and update the Canvas
+        ArrayList<se3group> filteredPoses = new ArrayList<>();
+        for (int i = 1; i < robot.T0i.size(); i++) {
+            filteredPoses.add(robot.T0i.get(i));
+        }
 
-        Toast.makeText(this, "Applied joint angles to robot", Toast.LENGTH_SHORT).show();
+        // 4. Update the data immediately
+        canvasView.setJointPoses(filteredPoses);
+
+        // 5. Force an immediate redraw (so the robot moves to the new position)
+        canvasView.invalidate(); 
+
+        // 6. Use .post() to safely re-center and re-zoom ONLY AFTER the layout is done
+        canvasView.post(new Runnable() {
+                @Override
+                public void run() {
+                    canvasView.zoomToFit();
+                }
+            });
     }
-
     private void createJointSliders()
 	{
         LayoutInflater inflater = LayoutInflater.from(this);
@@ -207,24 +246,6 @@ public class RobotControlActivity extends Activity
         return (int) (((value - min) / (max - min)) * 1000);
     }
 
-    private void updateRobot()
-	{
-        // Update 3D visualization with current joint angles
-        // This depends on your robot visualization library
-    }
-
-    private void updateRobotWithJoints(double[] thetaList)
-	{
-        // Update robot model with joint angles
-        // Example: call your kinematics solver or update 3D scene
-        for (int i = 0; i < joints.size(); i++)
-		{
-            String jointName = joints.get(i).name;
-            double angle = thetaList[i];
-            // Update your 3D model here
-            //Log.d("RobotControl", "Joint: " + jointName + " -> " + Math.toDegrees(angle) + "°");
-        }
-    }
     public static void clearLog()
     {
         debugLog = "";

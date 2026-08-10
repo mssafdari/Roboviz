@@ -119,7 +119,7 @@ public class Robot
         Vector6 Bvec = new Vector6();
 
 
-        M0i.add(M);  // T0,0
+        M0i.add(new se3group(M.matrix));  // T0,0
 
         for (int i = 0; i < Miminusonei.size(); i++)
         {
@@ -134,7 +134,7 @@ public class Robot
             S = computeScrewInBase(A0i, P0i, jt);
 			log += "M0,i(0," + i + ") =" + M.matrix + nl;
 
-            M0i.add(M);
+            M0i.add(new se3group(M.matrix));
             Slist.add(S);
         }
 		//R = Rx(π/2) * Ry(0) * Rz(0) = Rx(π/2)
@@ -198,6 +198,7 @@ public class Robot
                     se3group pose=forwardKinematics.FKinSpace(M0i.get(i), subSlist,
                                                               thetaSub, false);
                     T0i.add(pose);
+                    log+="T0i("+i+")="+nl+T0i.get(i).matrix.toString()+nl;
                     joints.get(i).location = pose.getPosition();
                 }
 

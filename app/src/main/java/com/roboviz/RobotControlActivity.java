@@ -13,14 +13,16 @@ import com.visualisation.RobotCanvasView;
 // RobotControlActivity.java
 public class RobotControlActivity extends Activity
 {
-    private String log="";
+    public static String debugLog="";
+    private static final String EL="\n";
+    private static boolean doLog=true;
     private TextView debug;
     private RobotCanvasView canvasView; 
     private LinearLayout slidersContainer;
     private List<Joint> joints = new ArrayList<>();
     private Map<String, SeekBar> sliderMap = new HashMap<>();
     private Map<String, TextView> valueMap = new HashMap<>();
-    
+
     private Robot robot;
 
     @Override
@@ -29,10 +31,11 @@ public class RobotControlActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.robot_view);
         debug = findViewById(R.id.myText);
+        debug.setTextIsSelectable(true);
         canvasView = findViewById(R.id.robot_canvas); 
 
         slidersContainer = findViewById(R.id.sliders_container);
-        
+
         // Setup buttons
         findViewById(R.id.btn_reset).setOnClickListener(new View.OnClickListener() {
 				@Override
@@ -53,19 +56,32 @@ public class RobotControlActivity extends Activity
         {
             // Check if file exists using utility
             String status = URDFUtils.getURDFFileStatus(this, "ur5.urdf.xml");
-            log+=status;
+            debugLog += status;
 
             // Load robot using utility
             robot = URDFUtils.loadDefaultRobot(this);
             robot.robot_init();
-            if (robot != null) {
+            canvasView.setJointPoses(robot.T0i);
+
+            if (robot != null)
+            {
                 //debug.setText(robot.toDebugString()+"\n"+log+"\n");
-                joints=robot.joints;
+                joints = robot.joints;
                 createJointSliders();
-            } else {
+            }
+            else
+            {
                 //debug.setText("Failed to load robot\n" + URDFUtils.getAvailableURDFFilesString(this));
             }
-            
+            canvasView.post(new Runnable() {
+                    @Override
+                    public void run()
+                    {
+                        canvasView.zoomToFit();
+                    }
+                });
+            debug.setText(debugLog);
+
         }
         catch (Exception e)
         {
@@ -208,5 +224,32 @@ public class RobotControlActivity extends Activity
             // Update your 3D model here
             //Log.d("RobotControl", "Joint: " + jointName + " -> " + Math.toDegrees(angle) + "°");
         }
+    }
+    public static void clearLog()
+    {
+        debugLog = "";
+    }
+
+    public static void appendLog(String text, Boolean verbose)
+    {
+        if (doLog && verbose)
+        {
+            debugLog += text + EL;
+        }
+    }
+
+    public static void appendTitle(String text, Boolean verbose)
+    {
+        if (doLog && verbose)
+        {
+            debugLog += text + EL;
+            debugLog += "______________________________________\n";
+        }
+    }
+
+    // In your UI, you can display it
+    public void updateLogDisplay()
+    { 
+        debug.setText(debugLog);
     }
 }
